@@ -45,10 +45,10 @@
     <Compile Include="DependencyOptions.cs" />
     <Compile Include="Ensure.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="IContainer.cs" />
-    <Compile Include="IContainerAdapter.cs" />
+    <Compile Include="Interfaces\IContainer.cs" />
+    <Compile Include="Interfaces\IContainerAdapter.cs" />
     <Compile Include="Interfaces\IBinding.cs" />
-    <Compile Include="ObjectFactories\IObjectFactory.cs" />
+    <Compile Include="Interfaces\IObjectFactory.cs" />
     <Compile Include="ObjectFactories\MultiInstanceObjectFactory.cs" />
     <Compile Include="ObjectFactories\SingletonObjectFactory.cs" />
     <Compile Include="ObjectScope.cs" />

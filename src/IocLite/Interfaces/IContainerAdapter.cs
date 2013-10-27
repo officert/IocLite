@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace IocLite
+namespace IocLite.Interfaces
 {
     public interface IContainerAdapter
     {

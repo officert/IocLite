@@ -1,6 +1,4 @@
-﻿using IocLite.Interfaces;
-
-namespace IocLite.ObjectFactories
+﻿namespace IocLite.Interfaces
 {
     public interface IObjectFactory
     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using IocLite.Interfaces;
 
 namespace IocLite
 {

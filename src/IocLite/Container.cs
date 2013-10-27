@@ -80,14 +80,9 @@ namespace IocLite
 
             if (binding == null) return CreateObjectGraph(type);
 
-            if (type.IsInterface)   //TODO; should this be type.IsAbstract || type.IsInterface ??
-            {
-                var objectFactory = _bindingRegistrations[binding];
+            var objectFactory = _bindingRegistrations[binding];
 
-                return objectFactory.GetObject(binding, this);
-            }
-
-            return CreateObjectGraph(type);
+            return objectFactory.GetObject(binding, this);
         }
 
         private IObjectFactory GetObjectFactory(ObjectScope objectScope, object instance = null)
