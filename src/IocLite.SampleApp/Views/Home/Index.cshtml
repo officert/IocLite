@@ -1,0 +1,16 @@
+﻿@model IocLite.SampleApp.Models.HomeModel
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Available Video Games</h2>
+
+@foreach (var game in Model.VideoGames)
+{
+    <div>
+        <h4>@game.Name</h4>
+        <label>Publisher:</label>
+        <span>@game.PublisherName</span>
+        <p>@game.Description</p>
+    </div>
+}

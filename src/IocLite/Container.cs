@@ -11,13 +11,13 @@ namespace IocLite
     public class Container : IContainer
     {
         private readonly ConcurrentDictionary<IBinding, IObjectFactory> _bindingRegistrations;
-        private readonly IObjectFactory _multiInstnaceObjectFactory;
+        private readonly IObjectFactory _multiInstanceObjectFactory;
 
         public Container()
         {
             _bindingRegistrations = new ConcurrentDictionary<IBinding, IObjectFactory>();
 
-            _multiInstnaceObjectFactory = new MultiInstanceObjectFactory();
+            _multiInstanceObjectFactory = new MultiInstanceObjectFactory();
         }
 
         public DependencyMap<TAbstractType> For<TAbstractType>()
@@ -38,16 +38,22 @@ namespace IocLite
 
         public IEnumerable<object> ResolveAll(Type type)
         {
+            Ensure.ArgumentIsNotNull(type, "type");
+
             throw new NotImplementedException();
         }
 
         public object TryResolve(Type type)
         {
+            Ensure.ArgumentIsNotNull(type, "type");
+
             throw new NotImplementedException();
         }
 
         public void Release(Type type)
         {
+            Ensure.ArgumentIsNotNull(type, "type");
+
             var binding = FindBindings(type).FirstOrDefault();
 
             if (binding == null) return;
@@ -59,7 +65,7 @@ namespace IocLite
 
         public void RegisterBinding(IBinding binding)
         {
-            if (binding == null) throw new ArgumentException("binding");
+            Ensure.ArgumentIsNotNull(binding, "binding");
 
             var success = _bindingRegistrations.TryAdd(binding, GetObjectFactory(binding.ObjectScope, binding.Instance));
         }
@@ -68,26 +74,17 @@ namespace IocLite
 
         private object ResolveInstance(Type type)
         {
+            Ensure.ArgumentIsNotNull(type, "type");
+
+            var binding = FindBindings(type).FirstOrDefault();
+
+            if (binding == null) return CreateObjectGraph(type);
+
             if (type.IsInterface)   //TODO; should this be type.IsAbstract || type.IsInterface ??
             {
-                var binding = FindBindings(type).FirstOrDefault();
-
-                if (binding == null)
-                {
-                    var newBinding = new Binding
-                    {
-                        ConcreteType = type,
-                        ObjectScope = ObjectScope.Transient
-                    };
-
-                    _bindingRegistrations.TryAdd(newBinding, GetObjectFactory(ObjectScope.Transient));
-
-                    binding = newBinding;
-                }
-
                 var objectFactory = _bindingRegistrations[binding];
 
-                return binding.Instance ?? objectFactory.GetObject(binding, this);
+                return objectFactory.GetObject(binding, this);
             }
 
             return CreateObjectGraph(type);
@@ -95,21 +92,25 @@ namespace IocLite
 
         private IObjectFactory GetObjectFactory(ObjectScope objectScope, object instance = null)
         {
+            Ensure.ArgumentIsNotNull(objectScope, "objectScope");
+
             switch (objectScope)
             {
                 case ObjectScope.Transient:
-                    return _multiInstnaceObjectFactory;
+                    return _multiInstanceObjectFactory;
 
                 case ObjectScope.Singleton:
                     return new SingletonObjectFactory(instance);
 
                 default:
-                    return _multiInstnaceObjectFactory;
+                    return _multiInstanceObjectFactory;
             }
         }
 
         private IEnumerable<IBinding> FindBindings(Type type)
         {
+            Ensure.ArgumentIsNotNull(type, "type");
+
             if (type == null) return null;
 
             if (type.IsInterface)
@@ -122,16 +123,17 @@ namespace IocLite
 
         internal object CreateObjectGraph(Type type)
         {
-            if (type == null) throw new ArgumentNullException("type");
+            Ensure.ArgumentIsNotNull(type, "type");
 
             if (type.IsInterface)
                 //if (type.IsAbstract || type.IsInterface)
                 throw new InvalidOperationException(string.Format("No map for abstract type '{0}' exists. You must register a map with a concrete implementation to inject this interface.", type));
 
             var constructors = type.GetConstructors();
-            var ctor = constructors.FirstOrDefault();
+            var ctor = constructors.FirstOrDefault();   //TODO: need better algorithm for choosing the constructor to use - should be something like
+                                                        //TODO: whichever constructor we can resolve the most dependencies for
 
-            if (type.HasADefaultConstructor() || ctor == null) //TODO: should no constructor just create the instance, since there are no dependencies to resolve??
+            if (type.HasADefaultConstructor() || ctor == null)
                 return Activator.CreateInstance(type);
 
             var constructorArgs = ctor.GetParameters().ToList();

@@ -3,6 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IocLite", "IocLite\IocLite.csproj", "{046D493F-8791-4BF3-90B4-1F3BD5D2B233}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B45E1E1D-811B-497C-BA34-0EE943EA455C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IocLite.SampleApp", "IocLite.SampleApp\IocLite.SampleApp.csproj", "{F15A4DC5-76DA-4A75-9A4F-C10250BA2D4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IocLite.Unit", "IocLite.Unit\IocLite.Unit.csproj", "{CFD50A0D-B354-4DC5-81AD-0C307415C109}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,8 +19,20 @@ Global
 		{046D493F-8791-4BF3-90B4-1F3BD5D2B233}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{046D493F-8791-4BF3-90B4-1F3BD5D2B233}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{046D493F-8791-4BF3-90B4-1F3BD5D2B233}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F15A4DC5-76DA-4A75-9A4F-C10250BA2D4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F15A4DC5-76DA-4A75-9A4F-C10250BA2D4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F15A4DC5-76DA-4A75-9A4F-C10250BA2D4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F15A4DC5-76DA-4A75-9A4F-C10250BA2D4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFD50A0D-B354-4DC5-81AD-0C307415C109}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFD50A0D-B354-4DC5-81AD-0C307415C109}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFD50A0D-B354-4DC5-81AD-0C307415C109}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFD50A0D-B354-4DC5-81AD-0C307415C109}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F15A4DC5-76DA-4A75-9A4F-C10250BA2D4C} = {B45E1E1D-811B-497C-BA34-0EE943EA455C}
+		{CFD50A0D-B354-4DC5-81AD-0C307415C109} = {B45E1E1D-811B-497C-BA34-0EE943EA455C}
 	EndGlobalSection
 EndGlobal
