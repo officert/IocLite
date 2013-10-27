@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using SharpTestsEx;
 
 namespace IocLite.Unit
 {
     [TestFixture]
+    [Category("Unit")]
     public class ContainerFixture
     {
         private Container _container;
@@ -19,6 +21,21 @@ namespace IocLite.Unit
         {
             _container = new Container();
         }
+
+        #region Register
+
+        [Test]
+        public void Register_RegistriesIsNull_ThrowsException()
+        {
+            //arrange
+            List<IRegistry> registries = null;
+
+            //act + assert
+            Assert.That(() => _container.Register(registries),
+                Throws.Exception.TypeOf(typeof(ArgumentNullException)).With.Message.StartsWith(Ensure.ArgumentNullMessage));
+        }
+
+        #endregion
 
         #region Resolve(Type)
 
@@ -54,7 +71,11 @@ namespace IocLite.Unit
         public void Resolve_RegisteredAsSingleton_ResolvesSameInstanceOfType()
         {
             //arrange
-            _container.For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().InSingletonScope();
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithSingleton()
+            });
+
             const string propValue1 = "string1";
             const string propValue2 = "string2";
 
@@ -69,6 +90,32 @@ namespace IocLite.Unit
 
             //assert
             instance1.Foobar.Should().Be.EqualTo(propValue2);
+            instance2.Foobar.Should().Be.EqualTo(propValue2);
+        }
+
+        [Test]
+        public void Resolve_RegisteredAsTransient_ResolvesDifferentInstanceOfType()
+        {
+            //arrange
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithTransient()
+            });
+
+            const string propValue1 = "string1";
+            const string propValue2 = "string2";
+
+            var typeToResolve = typeof(TypeWithDefaultConstructor);
+
+            //act
+            var instance1 = (TypeWithDefaultConstructor)_container.Resolve(typeToResolve);
+            instance1.Foobar = propValue1;
+
+            var instance2 = (TypeWithDefaultConstructor)_container.Resolve(typeToResolve);
+            instance2.Foobar = propValue2;
+
+            //assert
+            instance1.Foobar.Should().Be.EqualTo(propValue1);
             instance2.Foobar.Should().Be.EqualTo(propValue2);
         }
 
@@ -88,6 +135,22 @@ namespace IocLite.Unit
         }
 
         #endregion
+    }
+
+    internal class RegistryWithSingleton : Registry
+    {
+        public override void Load()
+        {
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().InSingletonScope();
+        }
+    }
+
+    internal class RegistryWithTransient : Registry
+    {
+        public override void Load()
+        {
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().InTransientScope();
+        }
     }
 
     /// <summary>

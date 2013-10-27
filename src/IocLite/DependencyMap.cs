@@ -5,17 +5,17 @@ namespace IocLite
 {
     public class DependencyMap<TAbstractType>
     {
-        private readonly IContainer _container;
+        private readonly IRegistry _registry;
         private readonly Binding _binding;
 
-        public DependencyMap(IContainer container)
+        public DependencyMap(IRegistry registry)
         {
-            _container = container;
+            _registry = registry;
 
             _binding = new Binding
             {
-                AbstractType = typeof(TAbstractType),
-                ConcreteType = ConcreteType
+                PluginType = typeof(TAbstractType),
+                ServiceType = ConcreteType
             };
         }
 
@@ -25,7 +25,7 @@ namespace IocLite
         {
             get
             {
-                return _binding.AbstractType;
+                return _binding.PluginType;
             }
         }
 
@@ -35,20 +35,20 @@ namespace IocLite
 
         public DependencyOptions Use<TConcreteType>() where TConcreteType : TAbstractType
         {
-            _binding.ConcreteType = typeof(TConcreteType);
+            _binding.ServiceType = typeof(TConcreteType);
 
-            _container.RegisterBinding(_binding);
+            _registry.RegisterBinding(_binding);
 
             return new DependencyOptions(_binding);
         }
 
         public DependencyOptions Use<TConcreteType>(TConcreteType type) where TConcreteType : TAbstractType
         {
-            _binding.ConcreteType = typeof(TConcreteType);
+            _binding.ServiceType = typeof(TConcreteType);
             _binding.Instance = type;
             _binding.ObjectScope = ObjectScope.Singleton;   //if you provide an instance, the registration will be a singleton instance
 
-            _container.RegisterBinding(_binding);
+            _registry.RegisterBinding(_binding);
 
             return new DependencyOptions(_binding);
         }

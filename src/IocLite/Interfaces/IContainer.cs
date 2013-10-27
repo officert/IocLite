@@ -5,8 +5,6 @@ namespace IocLite.Interfaces
 {
     public interface IContainer
     {
-        DependencyMap<TAbstractType> For<TAbstractType>();
-
         object Resolve(Type type);
         object Resolve<T>();
         IEnumerable<object> ResolveAll(Type type);
@@ -15,6 +13,6 @@ namespace IocLite.Interfaces
 
         void Release(Type type);
 
-        void RegisterBinding(IBinding binding);
+        void Register(IList<IRegistry> registries);
     }
 }

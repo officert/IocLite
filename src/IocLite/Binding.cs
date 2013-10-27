@@ -5,8 +5,8 @@ namespace IocLite
 {
     public class Binding : IBinding
     {
-        public Type AbstractType { get; set; }
-        public Type ConcreteType { get; set; }
+        public Type PluginType { get; set; }
+        public Type ServiceType { get; set; }
         public string Name { get; set; }
         public object Instance { get; set; }
         public ObjectScope ObjectScope { get; set; }
@@ -23,10 +23,10 @@ namespace IocLite
             ObjectScope = ObjectScope.Transient;
         }
 
-        public Binding(Type abstractType, Type concreteType, object instance = null, string name = null)
+        public Binding(Type pluginType, Type serviceType, object instance = null, string name = null)
         {
-            if (abstractType != null) AbstractType = abstractType;
-            if (concreteType != null) ConcreteType = concreteType;
+            if (pluginType != null) PluginType = pluginType;
+            if (serviceType != null) ServiceType = serviceType;
             if (instance != null) Instance = instance;
             if (!string.IsNullOrEmpty(name)) Name = name;
         }

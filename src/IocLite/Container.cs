@@ -10,19 +10,13 @@ namespace IocLite
 {
     public class Container : IContainer
     {
-        private readonly ConcurrentDictionary<IBinding, IObjectFactory> _bindingRegistrations;
-        private readonly IObjectFactory _multiInstanceObjectFactory;
+        private readonly ConcurrentBag<BindingRegistration> _bindingRegistrations;
+ 
+        private IEnumerable<IRegistry> _registries; 
 
         public Container()
         {
-            _bindingRegistrations = new ConcurrentDictionary<IBinding, IObjectFactory>();
-
-            _multiInstanceObjectFactory = new MultiInstanceObjectFactory();
-        }
-
-        public DependencyMap<TAbstractType> For<TAbstractType>()
-        {
-            return new DependencyMap<TAbstractType>(this);
+            _bindingRegistrations = new ConcurrentBag<BindingRegistration>();
         }
 
         public object Resolve(Type type)
@@ -52,22 +46,37 @@ namespace IocLite
 
         public void Release(Type type)
         {
+            //TODO: need to figure out what exactly Release should do - not sure the current behaviour is right
+
             Ensure.ArgumentIsNotNull(type, "type");
 
-            var binding = FindBindings(type).FirstOrDefault();
+            var binding = FindBindingRegistrations(type).FirstOrDefault();
 
             if (binding == null) return;
 
-            binding.Instance = null;
+            binding.Binding.Instance = null;
 
             //binding.Dispose();
         }
 
-        public void RegisterBinding(IBinding binding)
+        public void Register(IList<IRegistry> registries)
         {
-            Ensure.ArgumentIsNotNull(binding, "binding");
+            Ensure.ArgumentIsNotNull(registries, "registries");
 
-            var success = _bindingRegistrations.TryAdd(binding, GetObjectFactory(binding.ObjectScope, binding.Instance));
+            _registries = registries;
+
+            foreach (var registry in _registries)
+            {
+                foreach (var registration in registry.BindingRegistrations)
+                {
+                    Ensure.ArgumentIsNotNull(registration.Binding, "registration.Binding");
+                    Ensure.ArgumentIsNotNull(registration.Binding.ObjectScope, "registration.Binding.ObjectScope");
+
+                    registration.ObjectFactory = GetObjectFactory(registration.Binding.ObjectScope, registration.Binding.Instance);
+
+                    _bindingRegistrations.Add(registration);
+                }
+            }
         }
 
         #region Private Helpers
@@ -76,33 +85,20 @@ namespace IocLite
         {
             Ensure.ArgumentIsNotNull(type, "type");
 
-            var binding = FindBindings(type).FirstOrDefault();
+            var registrations = FindBindingRegistrations(type);
 
-            if (binding == null) return CreateObjectGraph(type);
+            if (registrations == null || !registrations.Any()) return CreateObjectGraph(type);
 
-            var objectFactory = _bindingRegistrations[binding];
+            //TODO: for now if they registration an interface multiple times throw an exception because we don't have a way to determine the default binding.
+            //TODO: need a way to determine the default binding for a PluginType
+            if (registrations.Count() > 1) throw new InvalidOperationException(string.Format("Cannot determine the default registration for Plugintype '{0}'", type));
+            
+            var reg = registrations.FirstOrDefault();
 
-            return objectFactory.GetObject(binding, this);
+            return reg.ObjectFactory.GetObject(reg.Binding, this);
         }
 
-        private IObjectFactory GetObjectFactory(ObjectScope objectScope, object instance = null)
-        {
-            Ensure.ArgumentIsNotNull(objectScope, "objectScope");
-
-            switch (objectScope)
-            {
-                case ObjectScope.Transient:
-                    return _multiInstanceObjectFactory;
-
-                case ObjectScope.Singleton:
-                    return new SingletonObjectFactory(instance);
-
-                default:
-                    return _multiInstanceObjectFactory;
-            }
-        }
-
-        private IEnumerable<IBinding> FindBindings(Type type)
+        private IEnumerable<BindingRegistration> FindBindingRegistrations(Type type)
         {
             Ensure.ArgumentIsNotNull(type, "type");
 
@@ -110,10 +106,21 @@ namespace IocLite
 
             if (type.IsInterface)
             {
-                return _bindingRegistrations.Keys.Where(x => x.AbstractType == type);
+                //interfaces can have multiple implementations - so it can have multiple bindings.
+                return _bindingRegistrations.Where(x => x.Binding.PluginType == type);
             }
 
-            return _bindingRegistrations.Keys.Where(x => x.ConcreteType == type);
+            var registrations = _bindingRegistrations.Where(x => x.Binding.ServiceType == type);
+
+            if (registrations == null || !registrations.Any()) return null;
+
+            if (registrations.Count() > 1)
+                throw new InvalidOperationException("You cannot have multple bindings for a concerete implementation.");
+
+            return new List<BindingRegistration>
+            {
+                registrations.FirstOrDefault()
+            };
         }
 
         internal object CreateObjectGraph(Type type)
@@ -141,6 +148,32 @@ namespace IocLite
             return Activator.CreateInstance(type, argObjs.ToArray());
         }
 
+        private IObjectFactory GetObjectFactory(ObjectScope objectScope, object instance = null)
+        {
+            Ensure.ArgumentIsNotNull(objectScope, "objectScope");
+
+            switch (objectScope)
+            {
+                case ObjectScope.Transient:
+                    //return _multiInstanceObjectFactory;
+                    return new MultiInstanceObjectFactory();
+
+                case ObjectScope.Singleton:
+                    return new SingletonObjectFactory(instance);
+
+                default:
+                    //return _multiInstanceObjectFactory;
+                    return new MultiInstanceObjectFactory();
+            }
+        }
+
         #endregion
+    }
+
+    public class BindingRegistration
+    {
+        public IBinding Binding { get; set; }
+
+        public IObjectFactory ObjectFactory { get; set; }
     }
 }

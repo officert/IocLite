@@ -22,9 +22,9 @@ namespace IocLite
             _binding.ObjectScope = ObjectScope.Singleton;
         }
 
-        public void InHttpRequestScope()
+        public void InTransientScope()
         {
-            _binding.ObjectScope = ObjectScope.HttpRequest;
+            _binding.ObjectScope = ObjectScope.Transient;
         }
     }
 
@@ -32,6 +32,6 @@ namespace IocLite
     {
         DependencyOptions Named(string name);
         void InSingletonScope();
-        void InHttpRequestScope();
+        void InTransientScope();
     }
 }
