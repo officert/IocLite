@@ -9,7 +9,9 @@ container and use their own container like Structure Map, or Castle Windsor.
 IOC Lite is not a full fledged IOC Container like StructureMap, or Castle Windsor and only supports a subset of their
 functionality. However, it does support constructor injection and object lifetime management.
 
-## Getting Started & Registering your dependencies
+## Getting Started & Register, Resolve, Release Pattern
+
+###Register
 
 To get started with IOC Lite, in your *Global.asax* create a new instance of `Container`.
 
@@ -54,7 +56,9 @@ public class IocRegistry : Registry
 }
 ```
 
+###Resolve
 
+###Release
 
 ## Object Lifetime
 
