@@ -14,4 +14,10 @@ IOC Lite provides a few options for object lifetime management. By default types
 be created each time you try and resolve the type from the container. You can optionally change the scope of the object
 to one of the following object scopes:
 
+| Scope         | Description   | Cool  |
+| ------------- |:-------------:| -----:|
+| Default       | right-aligned | $1600 |
+| Singleton     | centered      |   $12 |
+| Thread        | are neat      |    $1 |
+| Http Request  | are neat      |    $1 |
 
