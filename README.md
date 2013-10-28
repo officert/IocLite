@@ -24,7 +24,18 @@ protected void Application_Start()
 }
 ```
 
-IOC Lite uses the Register, Resolve, Release pattern.
+To register your dependencies create a new class that dervies from `Registry` and override the `Load()` method.
+
+``` c#
+public class IocRegistry : Registry
+{
+    public override void Load()
+    {
+        For<IVideoGameRepository>().Use<VideoGameRepository>();
+        For<IConsoleRepository>().Use<ConsoleRepository>();
+    }
+}
+```
 
 
 
