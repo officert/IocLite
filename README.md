@@ -24,7 +24,7 @@ protected void Application_Start()
 }
 ```
 
-###Register
+##Register
 
 To register your dependencies create a new class that dervies from `Registry` and override the `Load()` method.
 
@@ -56,7 +56,7 @@ public class IocRegistry : Registry
 }
 ```
 
-###Resolve
+##Resolve
 
 To resolve an instance of a type you can use the following methods on the container.
 
