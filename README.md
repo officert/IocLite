@@ -1,16 +1,28 @@
 IocLite
 =======
 
-IOC Lite is a lightweight IOC container that can be used in projects that need an internal DI container, as well as the
-ability to allow a user to use their own IOC container.
+IOC Lite is an IOC container that can be used in projects that need a lightweight internal DI container. It can be
+especially useful if you are building a library and need to use an IOC container, but also want to provide your users
+with an easy way to either use your internal IOC to register their own dependencies or swap out your internal IOC 
+container and use their own container like Structure Map, or Castle Windsor.
 
-IOC Lite is not a full fledged IOC Container like StructureMap, or Castle Windsor. It is only supports constructor
-injection, does not support auto registration and only has a few options for object lifetime management, and is only
-meant to be used in web applications.
+IOC Lite is not a full fledged IOC Container like StructureMap, or Castle Windsor and only supports a subset of their
+functionality. However, it does support constructor injection and object lifetime management.
 
 ## Getting Started & Registering your dependencies
 
 To get started with IOC Lite, in your *Global.asax* create a new instance of `Container`.
+
+``` c#
+protected void Application_Start()
+{
+    _container = new Container();
+    _container.Register(new List<IRegistry>
+    {
+        new IocRegistry()
+    });
+}
+```
 
 IOC Lite uses the Register, Resolve, Release pattern.
 
