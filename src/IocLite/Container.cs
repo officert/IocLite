@@ -11,6 +11,8 @@ namespace IocLite
     public class Container : IContainer
     {
         private readonly ConcurrentBag<BindingRegistration> _bindingRegistrations;
+
+        private readonly object _objetFactoryLock = new object();
  
         private IEnumerable<IRegistry> _registries; 
 
@@ -19,15 +21,39 @@ namespace IocLite
             _bindingRegistrations = new ConcurrentBag<BindingRegistration>();
         }
 
+        public void Register(IList<IRegistry> registries)
+        {
+            Ensure.ArgumentIsNotNull(registries, "registries");
+
+            _registries = registries;
+
+            foreach (var registry in _registries)
+            {
+                registry.Load();
+
+                foreach (var binding in registry.Bindings)
+                {
+                    Ensure.ArgumentIsNotNull(binding, "binding");
+                    Ensure.ArgumentIsNotNull(binding.ObjectScope, "binding.ObjectScope");
+
+                    _bindingRegistrations.Add(new BindingRegistration
+                    {
+                        Binding = binding,
+                        ObjectFactory = GetObjectFactory(binding.ObjectScope, binding.Instance)
+                    });
+                }
+            }
+        }
+
         public object Resolve(Type type)
         {
             return ResolveInstance(type);
         }
 
-        public object Resolve<T>()
+        public T Resolve<T>()
         {
             var type = typeof(T);
-            return ResolveInstance(type);
+            return (T)ResolveInstance(type);
         }
 
         public IEnumerable<object> ResolveAll(Type type)
@@ -41,7 +67,14 @@ namespace IocLite
         {
             Ensure.ArgumentIsNotNull(type, "type");
 
-            throw new NotImplementedException();
+            try
+            {
+                return ResolveInstance(type);
+            }
+            catch (Exception ex)    //TODO: catch more specific exceptions here
+            {
+                return null;
+            }
         }
 
         public void Release(Type type)
@@ -57,26 +90,6 @@ namespace IocLite
             binding.Binding.Instance = null;
 
             //binding.Dispose();
-        }
-
-        public void Register(IList<IRegistry> registries)
-        {
-            Ensure.ArgumentIsNotNull(registries, "registries");
-
-            _registries = registries;
-
-            foreach (var registry in _registries)
-            {
-                foreach (var registration in registry.BindingRegistrations)
-                {
-                    Ensure.ArgumentIsNotNull(registration.Binding, "registration.Binding");
-                    Ensure.ArgumentIsNotNull(registration.Binding.ObjectScope, "registration.Binding.ObjectScope");
-
-                    registration.ObjectFactory = GetObjectFactory(registration.Binding.ObjectScope, registration.Binding.Instance);
-
-                    _bindingRegistrations.Add(registration);
-                }
-            }
         }
 
         #region Private Helpers
@@ -95,7 +108,10 @@ namespace IocLite
             
             var reg = registrations.FirstOrDefault();
 
-            return reg.ObjectFactory.GetObject(reg.Binding, this);
+            lock (_objetFactoryLock)
+            {
+                return reg.ObjectFactory.GetObject(reg.Binding, this);
+            }
         }
 
         private IEnumerable<BindingRegistration> FindBindingRegistrations(Type type)
@@ -129,7 +145,7 @@ namespace IocLite
 
             if (type.IsInterface)
                 //if (type.IsAbstract || type.IsInterface)
-                throw new InvalidOperationException(string.Format("No map for abstract type '{0}' exists. You must register a map with a concrete implementation to inject this interface.", type));
+                throw new InvalidOperationException(string.Format("No map for plugin type '{0}' exists. You must register a binding for this interface.", type));
 
             var constructors = type.GetConstructors();
             var ctor = constructors.FirstOrDefault();   //TODO: need better algorithm for choosing the constructor to use - should be something like
@@ -152,28 +168,21 @@ namespace IocLite
         {
             Ensure.ArgumentIsNotNull(objectScope, "objectScope");
 
+            if (instance != null) return new SingletonObjectFactory(instance);  //if an instance is provided, always use singleton
+
             switch (objectScope)
             {
-                case ObjectScope.Transient:
-                    //return _multiInstanceObjectFactory;
+                case ObjectScope.Default:
                     return new MultiInstanceObjectFactory();
 
                 case ObjectScope.Singleton:
-                    return new SingletonObjectFactory(instance);
+                    return new SingletonObjectFactory();
 
                 default:
-                    //return _multiInstanceObjectFactory;
                     return new MultiInstanceObjectFactory();
             }
         }
 
         #endregion
-    }
-
-    public class BindingRegistration
-    {
-        public IBinding Binding { get; set; }
-
-        public IObjectFactory ObjectFactory { get; set; }
     }
 }

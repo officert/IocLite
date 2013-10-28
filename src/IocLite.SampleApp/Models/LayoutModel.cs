@@ -3,8 +3,8 @@ using IocLite.SampleApp.Data;
 
 namespace IocLite.SampleApp.Models
 {
-    public class HomeModel : LayoutModel
+    public class LayoutModel
     {
-        public IEnumerable<VideoGame> VideoGames { get; set; } 
+        public IEnumerable<Console> Consoles { get; set; }
     }
 }

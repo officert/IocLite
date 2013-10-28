@@ -3,8 +3,21 @@ namespace IocLite
 {
     public enum ObjectScope
     {
-        Transient,
+        /// <summary>
+        /// The container will create a new instance every time one is requested.
+        /// </summary>
+        Default,
+        /// <summary>
+        /// The container will create a single instance and return that instance every time one is requested.
+        /// </summary>
         Singleton,
-        HttpRequest
+        /// <summary>
+        /// The container will create a single instance per HTTP request and return that instance for the duration of the HTTP request.
+        /// </summary>
+        HttpRequest,
+        /// <summary>
+        /// The container will create a single instance per thread and return that instance for the duration of the thread.
+        /// </summary>
+        ThreadScope
     }
 }

@@ -109,11 +109,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Data\Console.cs" />
+    <Compile Include="Data\ConsoleRepository.cs" />
     <Compile Include="Data\VideoGameRepository.cs" />
     <Compile Include="Data\VideoGame.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Ioc\IocControllerFactory.cs" />
+    <Compile Include="Ioc\IocRegistry.cs" />
+    <Compile Include="Models\ConsoleModel.cs" />
+    <Compile Include="Models\LayoutModel.cs" />
     <Compile Include="Models\HomeModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -205,6 +211,7 @@
     <Content Include="Content\font\fontawesome-webfont.ttf" />
     <Content Include="Content\font\fontawesome-webfont.woff" />
     <Content Include="Content\font\FontAwesome.otf" />
+    <Content Include="Views\Home\Console.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

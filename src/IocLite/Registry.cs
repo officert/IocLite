@@ -7,21 +7,19 @@ namespace IocLite
 {
     public abstract class Registry : IRegistry
     {
-        private readonly ICollection<BindingRegistration> _bindingRegistrations;
- 
-        public ICollection<BindingRegistration> BindingRegistrations
+        private readonly ICollection<IBinding> _bindings;
+
+        public ICollection<IBinding> Bindings
         {
             get
             {
-                return _bindingRegistrations;
+                return _bindings;
             }
         }
 
         protected Registry()
         {
-            _bindingRegistrations = new Collection<BindingRegistration>();
-
-            Load();
+            _bindings = new Collection<IBinding>();
         }
 
         public virtual void Load()
@@ -38,16 +36,13 @@ namespace IocLite
         {
             Ensure.ArgumentIsNotNull(binding, "binding");
 
-            BindingRegistrations.Add(new BindingRegistration
-            {
-                Binding = binding
-            });
+            _bindings.Add(binding);
         }
     }
 
     public interface IRegistry
     {
-        ICollection<BindingRegistration> BindingRegistrations { get; }
+        ICollection<IBinding> Bindings { get; }
         void Load();
         DependencyMap<TAbstractType> For<TAbstractType>();
         void RegisterBinding(IBinding binding);

@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@model IocLite.SampleApp.Models.LayoutModel
 
+<!DOCTYPE html>
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
@@ -12,10 +13,18 @@
         <div class="navbar-header">
             <a class="navbar-brand" href="@Url.Action("Index","Home")">IOC Lite</a>
         </div>
-@*        <nav class="collapse navbar-collapse">
+        <nav class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
+                @foreach (var link in Model.Consoles)
+                {
+                    <li>
+                        <a href="@Url.Action("Console","Home", new { id = link.Id })">
+                            @link.Name
+                        </a>
+                    </li>
+                }
             </ul>
-        </nav>*@
+        </nav>
     </div>
     <div class="container">
         @RenderBody()

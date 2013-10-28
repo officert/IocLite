@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Binding.cs" />
+    <Compile Include="BindingRegistration.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="DependencyMap.cs" />
     <Compile Include="DependencyOptions.cs" />

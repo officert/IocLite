@@ -17,21 +17,33 @@ namespace IocLite
             return new DependencyOptions(_binding);
         }
 
+        public void InDefaultScope()
+        {
+            _binding.ObjectScope = ObjectScope.Default;
+        }
+
         public void InSingletonScope()
         {
             _binding.ObjectScope = ObjectScope.Singleton;
         }
 
-        public void InTransientScope()
+        public void InHttpRequestScope()
         {
-            _binding.ObjectScope = ObjectScope.Transient;
+            _binding.ObjectScope = ObjectScope.HttpRequest;
+        }
+
+        public void InThreadScope()
+        {
+            _binding.ObjectScope = ObjectScope.ThreadScope;
         }
     }
 
     public interface IDependencyOptions
     {
         DependencyOptions Named(string name);
+        void InDefaultScope();
         void InSingletonScope();
-        void InTransientScope();
+        void InHttpRequestScope();
+        void InThreadScope();
     }
 }

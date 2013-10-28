@@ -15,13 +15,13 @@ namespace IocLite
             _binding = new Binding
             {
                 PluginType = typeof(TAbstractType),
-                ServiceType = ConcreteType
+                ServiceType = ServiceType
             };
         }
 
-        public Type ConcreteType { get; private set; }
+        public Type ServiceType { get; private set; }
 
-        public Type AbstractType
+        public Type PluginType
         {
             get
             {

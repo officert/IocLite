@@ -1,0 +1,14 @@
+﻿@model IocLite.SampleApp.Models.ConsoleModel
+@{
+    ViewBag.Title = "Console";
+}
+
+<h2>@Model.Console.Name</h2>
+
+@foreach (var game in Model.Games)
+{
+    <div>
+        <h3>@game.Name</h3>
+        <p>@game.Description</p>
+    </div>
+}
