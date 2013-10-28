@@ -14,10 +14,11 @@ IOC Lite provides a few options for object lifetime management. By default types
 be created each time you try and resolve the type from the container. You can optionally change the scope of the object
 to one of the following object scopes:
 
-| Scope         | Description   | Cool  |
-| ------------- |:-------------:| -----:|
-| Default       | right-aligned | $1600 |
-| Singleton     | centered      |   $12 |
-| Thread        | are neat      |    $1 |
-| Http Request  | are neat      |    $1 |
+| Scope         | Description                |
+| ------------- | -------------------------- |
+| Default       | The container will create a new instance of the type everytime one is requested. |
+| Singleton     | The container will create a single instance of the type the first time one is request, and will 
+return that one instance for all future requests for the lifetime of the application. |
+| Thread        | Like singleton scope, only the container will create a new instance per thread.
+| Http Request  | Lite singleton and thread scope, only the container will create a new instance per http request. |
 
