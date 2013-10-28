@@ -89,6 +89,6 @@ to one of the following object scopes:
 | ------------- | -------------------------- |
 | Default       | The container will create a new instance of the type everytime one is requested. |
 | Singleton     | The container will create a single instance of the type the first time one is request, and will return that one instance for all future requests for the lifetime of the application. |
-| Thread        | Like singleton scope, only the container will create a new instance per thread.
-| Http Request  | Lite singleton and thread scope, only the container will create a new instance per http request. |
+| Thread        | Like singleton scope the container will cretae a single instance of the type the first time one is request, and will return that one instance for the duration of the thread.
+| Http Request  | Like singleton and thread scope the container will cretae a single instance of the type the first time one is request, and will return that one instance for the duration of the http request. |
 
