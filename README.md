@@ -17,10 +17,6 @@ To get started with IOC Lite, in your *Global.asax* create a new instance of `Co
 protected void Application_Start()
 {
     _container = new Container();
-    _container.Register(new List<IRegistry>
-    {
-        new IocRegistry()
-    });
 }
 ```
 
@@ -53,6 +49,19 @@ public class IocRegistry : Registry
         For<IVideoGameRepository>().Use<VideoGameRepository>().InSingletonScope();
         For<IConsoleRepository>().Use<ConsoleRepository>();
     }
+}
+```
+
+Back in your *Global.asax*, call the `Register` method on the container and pass it a list of your registries:
+
+``` c#
+protected void Application_Start()
+{
+    _container = new Container();
+    _container.Register(new List<IRegistry>
+    {
+        new IocRegistry()
+    });
 }
 ```
 
