@@ -37,6 +37,23 @@ public class IocRegistry : Registry
 }
 ```
 
+IOC Lite provides a fluent-stle API for registering your dependencies.
+
+When registering dependencies you can also specify the object lifetime. 
+By default dependencies will use the `Default Scope` and a new instance of the type will be created everytime
+you request one from the container.
+
+``` c#
+public class IocRegistry : Registry
+{
+    public override void Load()
+    {
+        For<IVideoGameRepository>().Use<VideoGameRepository>().InSingletonScope();
+        For<IConsoleRepository>().Use<ConsoleRepository>();
+    }
+}
+```
+
 
 
 ## Object Lifetime
