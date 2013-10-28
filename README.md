@@ -5,7 +5,11 @@ IOC Lite is a lightweight IOC container that can be used in projects that need a
 ability to allow a user to use their own IOC container.
 
 IOC Lite is not a full fledged IOC Container like StructureMap, or Castle Windsor. It is only supports constructor
-injection, does not support auto registration and only has a few options for object lifetime management.
+injection, does not support auto registration and only has a few options for object lifetime management, and is only
+meant to be used in web applications.
+
+## Getting Started
+
 
 
 ## Object Lifetime
