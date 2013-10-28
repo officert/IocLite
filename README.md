@@ -8,7 +8,11 @@ IOC Lite is not a full fledged IOC Container like StructureMap, or Castle Windso
 injection, does not support auto registration and only has a few options for object lifetime management, and is only
 meant to be used in web applications.
 
-## Getting Started
+## Getting Started & Registering your dependencies
+
+To get started with IOC Lite, in your *Global.asax* create a new instance of `Container`.
+
+IOC Lite uses the Register, Resolve, Release pattern.
 
 
 
