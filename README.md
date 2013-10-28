@@ -58,6 +58,13 @@ public class IocRegistry : Registry
 
 ###Resolve
 
+To resolve an instance of a type you can use the following methods on the container.
+
+``` c#
+_container.Resolve(Type t)
+_container.Resolve<T>()
+```
+
 ###Release
 
 ## Object Lifetime
