@@ -61,8 +61,11 @@ public class IocRegistry : Registry
 To resolve an instance of a type you can use the following methods on the container.
 
 ``` c#
-_container.Resolve(Type t)
-_container.Resolve<T>()
+var instance = _container.Resolve(typeof(IVideoGameRepository));
+```
+
+``` c#
+var instance = _container.Resolve<IVideoGameRepository>();
 ```
 
 ###Release
