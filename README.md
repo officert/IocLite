@@ -35,7 +35,7 @@ public class IocRegistry : Registry
 }
 ```
 
-IOC Lite provides a fluent API for registering your dependencies.
+IOC Lite provides a fluent interface for registering your dependencies.
 
 When registering dependencies you can also specify the object lifetime. 
 By default dependencies will use the `Default Scope` and a new instance of the type will be created everytime
