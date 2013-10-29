@@ -35,7 +35,7 @@ public class IocRegistry : Registry
 }
 ```
 
-IOC Lite provides a fluent-stle API for registering your dependencies.
+IOC Lite provides a fluent API for registering your dependencies.
 
 When registering dependencies you can also specify the object lifetime. 
 By default dependencies will use the `Default Scope` and a new instance of the type will be created everytime
@@ -89,6 +89,6 @@ to one of the following object scopes:
 | ------------- | -------------------------- |
 | Default       | The container will create a new instance of the type everytime one is requested. |
 | Singleton     | The container will create a single instance of the type the first time one is request, and will return that one instance for all future requests for the lifetime of the application. |
-| Thread        | Like singleton scope the container will create a single instance of the type the first time one is request, and will return that one instance for the duration of the thread.
-| Http Request  | Like singleton and thread scope the container will create a single instance of the type the first time one is request, and will return that one instance for the duration of the http request. |
+| Thread        | Like singleton scope the container will create a single instance of the type the first time one is requested, and will return that one instance for the duration of the thread.
+| Http Request  | Like singleton and thread scope the container will create a single instance of the type the first time one is requested, and will return that one instance for the duration of the http request. |
 
