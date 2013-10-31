@@ -10,7 +10,7 @@ namespace IocLite
 {
     public class Container : IContainer
     {
-        private readonly ConcurrentBag<BindingRegistration> _bindingRegistrations;
+        internal readonly ConcurrentBag<BindingRegistration> BindingRegistrations;
 
         private readonly object _objetFactoryLock = new object();
  
@@ -18,7 +18,7 @@ namespace IocLite
 
         public Container()
         {
-            _bindingRegistrations = new ConcurrentBag<BindingRegistration>();
+            BindingRegistrations = new ConcurrentBag<BindingRegistration>();
         }
 
         public void Register(IList<IRegistry> registries)
@@ -36,7 +36,7 @@ namespace IocLite
                     Ensure.ArgumentIsNotNull(binding, "binding");
                     Ensure.ArgumentIsNotNull(binding.ObjectScope, "binding.ObjectScope");
 
-                    _bindingRegistrations.Add(new BindingRegistration
+                    BindingRegistrations.Add(new BindingRegistration
                     {
                         Binding = binding,
                         ObjectFactory = GetObjectFactory(binding.ObjectScope, binding.Instance)
@@ -92,6 +92,31 @@ namespace IocLite
             //binding.Dispose();
         }
 
+        internal object CreateObjectGraph(Type type)
+        {
+            Ensure.ArgumentIsNotNull(type, "type");
+
+            if (type.IsInterface)
+                //if (type.IsAbstract || type.IsInterface)
+                throw new InvalidOperationException(string.Format("No map for plugin type '{0}' exists. You must register a binding for this interface.", type));
+
+            var constructors = type.GetConstructors();
+            var ctor = constructors.FirstOrDefault();   //TODO: need better algorithm for choosing the constructor to use - should be something like
+            //TODO: whichever constructor we can resolve the most dependencies for
+
+            if (type.HasADefaultConstructor() || ctor == null)
+                return Activator.CreateInstance(type);
+
+            var constructorArgs = ctor.GetParameters().ToList();
+            var argObjs = new List<object>();
+
+            foreach (var constructorArg in constructorArgs)
+            {
+                argObjs.Add(Resolve(constructorArg.ParameterType));
+            }
+            return Activator.CreateInstance(type, argObjs.ToArray());
+        }
+
         #region Private Helpers
 
         private object ResolveInstance(Type type)
@@ -123,10 +148,10 @@ namespace IocLite
             if (type.IsInterface)
             {
                 //interfaces can have multiple implementations - so it can have multiple bindings.
-                return _bindingRegistrations.Where(x => x.Binding.PluginType == type);
+                return BindingRegistrations.Where(x => x.Binding.ServiceType == type);
             }
 
-            var registrations = _bindingRegistrations.Where(x => x.Binding.ServiceType == type);
+            var registrations = BindingRegistrations.Where(x => x.Binding.PluginType == type);
 
             if (registrations == null || !registrations.Any()) return null;
 
@@ -139,36 +164,12 @@ namespace IocLite
             };
         }
 
-        internal object CreateObjectGraph(Type type)
-        {
-            Ensure.ArgumentIsNotNull(type, "type");
-
-            if (type.IsInterface)
-                //if (type.IsAbstract || type.IsInterface)
-                throw new InvalidOperationException(string.Format("No map for plugin type '{0}' exists. You must register a binding for this interface.", type));
-
-            var constructors = type.GetConstructors();
-            var ctor = constructors.FirstOrDefault();   //TODO: need better algorithm for choosing the constructor to use - should be something like
-                                                        //TODO: whichever constructor we can resolve the most dependencies for
-
-            if (type.HasADefaultConstructor() || ctor == null)
-                return Activator.CreateInstance(type);
-
-            var constructorArgs = ctor.GetParameters().ToList();
-            var argObjs = new List<object>();
-
-            foreach (var constructorArg in constructorArgs)
-            {
-                argObjs.Add(Resolve(constructorArg.ParameterType));
-            }
-            return Activator.CreateInstance(type, argObjs.ToArray());
-        }
-
         private IObjectFactory GetObjectFactory(ObjectScope objectScope, object instance = null)
         {
             Ensure.ArgumentIsNotNull(objectScope, "objectScope");
 
-            if (instance != null) return new SingletonObjectFactory(instance);  //if an instance is provided, always use singleton
+            if (instance != null && objectScope != ObjectScope.Singleton)
+                throw new InvalidOperationException("Can only register a type with an instance in singleton scope.");
 
             switch (objectScope)
             {
@@ -176,7 +177,13 @@ namespace IocLite
                     return new MultiInstanceObjectFactory();
 
                 case ObjectScope.Singleton:
-                    return new SingletonObjectFactory();
+                    return new SingletonInstanceObjectFactory(instance);
+
+                case ObjectScope.ThreadScope:
+                    return new ThreadInstanceObjectFactory();
+
+                case ObjectScope.HttpRequest:
+                    return new HttpRequestInstanceObjectFactory();
 
                 default:
                     return new MultiInstanceObjectFactory();

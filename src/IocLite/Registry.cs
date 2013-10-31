@@ -27,9 +27,9 @@ namespace IocLite
             //throw new NotImplementedException("You must provide your own implementation of Registry.Load()");
         }
 
-        public DependencyMap<TAbstractType> For<TAbstractType>()
+        public DependencyMap<TServiceType> For<TServiceType>()
         {
-            return new DependencyMap<TAbstractType>(this);
+            return new DependencyMap<TServiceType>(this);
         }
 
         public void RegisterBinding(IBinding binding)
@@ -38,13 +38,5 @@ namespace IocLite
 
             _bindings.Add(binding);
         }
-    }
-
-    public interface IRegistry
-    {
-        ICollection<IBinding> Bindings { get; }
-        void Load();
-        DependencyMap<TAbstractType> For<TAbstractType>();
-        void RegisterBinding(IBinding binding);
     }
 }

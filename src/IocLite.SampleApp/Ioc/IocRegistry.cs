@@ -6,8 +6,8 @@ namespace IocLite.SampleApp.Ioc
     {
         public override void Load()
         {
-            For<IVideoGameRepository>().Use<VideoGameRepository>();
-            For<IConsoleRepository>().Use<ConsoleRepository>();
+            For<IVideoGameRepository>().Use<VideoGameRepository>().InHttpRequestScope();
+            For<IConsoleRepository>().Use<ConsoleRepository>().InHttpRequestScope();
         }
     }
 }

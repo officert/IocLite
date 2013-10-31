@@ -19,6 +19,11 @@ namespace IocLite
             if (argument == null || !argument.Any()) throw new ArgumentException(ArgumentNullOrEmptyMessage, name);
         }
 
+        public static void ArgumentIsNotNullOrEmtpy<T>(IEnumerable<T> argument, string name) where T : class
+        {
+            if (argument == null || !argument.Any()) throw new ArgumentException(ArgumentNullOrEmptyMessage, name);
+        }
+
         public static void ArgumentIsNotNullOrEmtpy(string argument, string name)
         {
             if (string.IsNullOrEmpty(argument)) throw new ArgumentException(ArgumentNullOrEmptyMessage, name);

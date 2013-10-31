@@ -1,53 +1,43 @@
-﻿using System;
-using IocLite.Interfaces;
+﻿using IocLite.Interfaces;
 
 namespace IocLite
 {
-    public class DependencyMap<TAbstractType>
+    public class DependencyMap<TServiceType>
     {
         private readonly IRegistry _registry;
         private readonly Binding _binding;
 
         public DependencyMap(IRegistry registry)
         {
+            Ensure.ArgumentIsNotNull(registry, "registry");
+
             _registry = registry;
 
             _binding = new Binding
             {
-                PluginType = typeof(TAbstractType),
-                ServiceType = ServiceType
+                ServiceType = typeof(TServiceType)
             };
-        }
-
-        public Type ServiceType { get; private set; }
-
-        public Type PluginType
-        {
-            get
-            {
-                return _binding.PluginType;
-            }
         }
 
         public string Name { get; set; }
 
         public object Instance { get; set; }
 
-        public DependencyOptions Use<TConcreteType>() where TConcreteType : TAbstractType
+        public DependencyOptions Use<TPluginType>() where TPluginType : TServiceType
         {
-            _binding.ServiceType = typeof(TConcreteType);
+            _binding.PluginType = typeof(TPluginType);
 
             _registry.RegisterBinding(_binding);
 
             return new DependencyOptions(_binding);
         }
 
-        public DependencyOptions Use<TConcreteType>(TConcreteType type) where TConcreteType : TAbstractType
+        public DependencyOptions Use<TPluginType>(TPluginType type) where TPluginType : TServiceType
         {
-            _binding.ServiceType = typeof(TConcreteType);
             _binding.Instance = type;
-            _binding.ObjectScope = ObjectScope.Singleton;   //if you provide an instance, the registration will be a singleton instance
+            _binding.ObjectScope = ObjectScope.Singleton;   //if you provide an instance, the registration will default to singleton scope
 
+            _binding.PluginType = typeof(TPluginType);
             _registry.RegisterBinding(_binding);
 
             return new DependencyOptions(_binding);

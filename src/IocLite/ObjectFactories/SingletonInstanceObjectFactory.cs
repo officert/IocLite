@@ -2,22 +2,22 @@
 
 namespace IocLite.ObjectFactories
 {
-    public class SingletonObjectFactory : IObjectFactory
+    public class SingletonInstanceObjectFactory : IObjectFactory
     {
         private object _objInstance;
 
-        public SingletonObjectFactory()
+        public SingletonInstanceObjectFactory()
         {
         }
 
-        public SingletonObjectFactory(object instance)
+        public SingletonInstanceObjectFactory(object instance)
         {
             _objInstance = instance;
         }
 
         public object GetObject(IBinding binding, Container container)
         {
-            return _objInstance ?? (_objInstance = container.CreateObjectGraph(binding.ServiceType));
+            return _objInstance ?? (_objInstance = container.CreateObjectGraph(binding.PluginType));
         }
     }
 }

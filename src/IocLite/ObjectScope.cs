@@ -8,7 +8,7 @@ namespace IocLite
         /// </summary>
         Default,
         /// <summary>
-        /// The container will create a single instance and return that instance every time one is requested.
+        /// The container will create a single instance and return that instance for the duration of the application.
         /// </summary>
         Singleton,
         /// <summary>

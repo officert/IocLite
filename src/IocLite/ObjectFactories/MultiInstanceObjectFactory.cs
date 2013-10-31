@@ -6,7 +6,7 @@ namespace IocLite.ObjectFactories
     {
         public object GetObject(IBinding binding, Container container)
         {
-            return container.CreateObjectGraph(binding.ServiceType);
+            return container.CreateObjectGraph(binding.PluginType);
         }
     }
 }
