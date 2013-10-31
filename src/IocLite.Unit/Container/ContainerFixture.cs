@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using IocLite.Interfaces;
+using IocLite.Resources;
 using NUnit.Framework;
 using SharpTestsEx;
 
-namespace IocLite.Unit
+namespace IocLite.Unit.Container
 {
     [TestFixture]
     [Category("Unit")]
     public class ContainerFixture
     {
-        private Container _container;
+        private IocLite.Container _container;
 
         [TestFixtureSetUp]
         public void FixtureSetup()
@@ -23,7 +23,7 @@ namespace IocLite.Unit
         [SetUp]
         public void Setup()
         {
-            _container = new Container();
+            _container = new IocLite.Container();
         }
 
         #region Register
@@ -110,7 +110,7 @@ namespace IocLite.Unit
 
         #endregion
 
-        #region Resolve(Type)
+        #region Resolve
 
         [Test]
         public void Resolve_DidNotRegisterType_ResolvesNewInstanceEveryTime()
@@ -155,6 +155,28 @@ namespace IocLite.Unit
             instance.Should().Not.Be.Null();
             var castInstance = (TypeWith1DependencyInConstructor)instance;
             castInstance.TypeWithDefaultConstructor.Should().Not.Be.Null();
+        }
+
+        [Test]
+        public void Resolve_DidNotRegisterType_AndTypeIsAnInterface_ThrowsException()
+        {
+            //arrange
+            var typeToResolve = typeof (ITypeWithDefaultConstructor);
+
+            //act + assert
+            Assert.That(() => _container.Resolve(typeToResolve),
+                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(Exceptions.CannotCreateInstanceOfAbstractType, typeToResolve)));
+        }
+
+        [Test]
+        public void Resolve_DidNotRegisterType_AndTypeIsAnAbstractType_ThrowsException()
+        {
+            //arrange
+            var typeToResolve = typeof(Assembly);
+
+            //act + assert
+            Assert.That(() => _container.Resolve(typeToResolve),
+                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(Exceptions.CannotCreateInstanceOfAbstractType, typeToResolve)));
         }
 
         #region Default Scope Tests
@@ -400,6 +422,10 @@ namespace IocLite.Unit
 
         #endregion
 
+        #region Constructor Tests
+
+        #endregion
+
         #endregion
 
         #region CreateObjectGraph
@@ -483,7 +509,7 @@ namespace IocLite.Unit
     /// <summary>
     /// Type with no dependencies.
     /// </summary>
-    internal class TypeWithDefaultConstructor
+    internal class TypeWithDefaultConstructor : ITypeWithDefaultConstructor
     {
         public string Foobar { get; set; }
 
@@ -504,5 +530,10 @@ namespace IocLite.Unit
         {
             TypeWithDefaultConstructor = typeWithDefaultConstructor;
         }
+    }
+
+    internal interface ITypeWithDefaultConstructor
+    {
+        
     }
 }

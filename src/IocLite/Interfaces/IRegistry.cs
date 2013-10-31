@@ -4,7 +4,7 @@ namespace IocLite.Interfaces
 {
     public interface IRegistry
     {
-        ICollection<IBinding> Bindings { get; }
+        IEnumerable<IBinding> Bindings { get; }
         void Load();
         DependencyMap<TAbstractType> For<TAbstractType>();
         void RegisterBinding(IBinding binding);

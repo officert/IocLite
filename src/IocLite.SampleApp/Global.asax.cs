@@ -3,6 +3,7 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
 using IocLite.Interfaces;
+using IocLite.SampleApp.App_Start;
 using IocLite.SampleApp.Ioc;
 
 namespace IocLite.SampleApp

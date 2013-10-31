@@ -5,6 +5,7 @@ using System.Linq;
 using IocLite.Extensions;
 using IocLite.Interfaces;
 using IocLite.ObjectFactories;
+using IocLite.Resources;
 
 namespace IocLite
 {
@@ -13,8 +14,8 @@ namespace IocLite
         internal readonly ConcurrentBag<BindingRegistration> BindingRegistrations;
 
         private readonly object _objetFactoryLock = new object();
- 
-        private IEnumerable<IRegistry> _registries; 
+
+        private IEnumerable<IRegistry> _registries;
 
         public Container()
         {
@@ -77,7 +78,7 @@ namespace IocLite
             }
         }
 
-        public void Release(Type type)
+        public void Release(Type/**/ type)
         {
             //TODO: need to figure out what exactly Release should do - not sure the current behaviour is right
 
@@ -96,9 +97,8 @@ namespace IocLite
         {
             Ensure.ArgumentIsNotNull(type, "type");
 
-            if (type.IsInterface)
-                //if (type.IsAbstract || type.IsInterface)
-                throw new InvalidOperationException(string.Format("No map for plugin type '{0}' exists. You must register a binding for this interface.", type));
+            if (type.IsAbstract || type.IsInterface)
+                throw new InvalidOperationException(string.Format(Exceptions.CannotCreateInstanceOfAbstractType, type));
 
             var constructors = type.GetConstructors();
             var ctor = constructors.FirstOrDefault();   //TODO: need better algorithm for choosing the constructor to use - should be something like
@@ -130,7 +130,7 @@ namespace IocLite
             //TODO: for now if they registration an interface multiple times throw an exception because we don't have a way to determine the default binding.
             //TODO: need a way to determine the default binding for a PluginType
             if (registrations.Count() > 1) throw new InvalidOperationException(string.Format("Cannot determine the default registration for Plugintype '{0}'", type));
-            
+
             var reg = registrations.FirstOrDefault();
 
             lock (_objetFactoryLock)

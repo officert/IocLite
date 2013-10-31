@@ -9,7 +9,7 @@ namespace IocLite
     {
         private readonly ICollection<IBinding> _bindings;
 
-        public ICollection<IBinding> Bindings
+        public IEnumerable<IBinding> Bindings
         {
             get
             {
