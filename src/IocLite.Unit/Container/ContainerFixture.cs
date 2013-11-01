@@ -40,7 +40,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_RegistryDependencyMapDoesNotSpecifyScope_TypesAreRegisteredInDefaultScope()
+        public void Register_DependencyMapDoesNotSpecifyScope_TypesAreRegisteredInDefaultScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -51,12 +51,12 @@ namespace IocLite.Unit.Container
             //assert
             foreach (var registration in _container.BindingRegistrations)
             {
-                registration.Binding.ObjectScope.Should().Be.EqualTo(ObjectScope.Default);
+                registration.Binding.ObjectScope.Should().Be.EqualTo(ObjectScope.Transient);
             }
         }
 
         [Test]
-        public void Register_RegistryDependencyMapSpecifiesSingletonScope_TypesAreRegisteredInSingletonScope()
+        public void Register_DependencyMapSpecifiesSingletonScope_TypesAreRegisteredInSingletonScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -72,7 +72,39 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_RegistryDependencyMapProvidesInstanceWithoutSpecifyingScope_TypesAreRegisteredInSingletonScope()
+        public void Register_DependencyMapSpecifiesThreadScope_TypesAreRegisteredInThreadScope()
+        {
+            //arrange + act
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithThreaded()
+            });
+
+            //assert
+            foreach (var registration in _container.BindingRegistrations)
+            {
+                registration.Binding.ObjectScope.Should().Be.EqualTo(ObjectScope.ThreadScope);
+            }
+        }
+
+        [Test]
+        public void Register_DependencyMapSpecifiesHttpRequestScope_TypesAreRegisteredInHttpRequestScope()
+        {
+            //arrange + act
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithHttpRequest()
+            });
+
+            //assert
+            foreach (var registration in _container.BindingRegistrations)
+            {
+                registration.Binding.ObjectScope.Should().Be.EqualTo(ObjectScope.HttpRequest);
+            }
+        }
+
+        [Test]
+        public void Register_DependencyMapProvidesInstanceWithoutSpecifyingScope_TypesAreRegisteredInSingletonScope()
         {
             //arrange
             var currentAssembly = Assembly.GetCallingAssembly();
@@ -80,7 +112,7 @@ namespace IocLite.Unit.Container
             //act
             _container.Register(new List<IRegistry>
             {
-                new RegistryWithInstance(currentAssembly)
+                new RegistryWithAbstractTypeInstance(currentAssembly)
             });
 
             //assert
@@ -95,7 +127,7 @@ namespace IocLite.Unit.Container
         /// Cannot register a type with an instance in anything but singleton scope, which is the default scope when an instance is provided
         /// </summary>
         [Test]
-        public void Register_RegistryDependencyMapProvidesInstanceInNonSingletonScope_ThrowsException()
+        public void Register_DependencyMapProvidesInstanceInNonSingletonScope_ThrowsException()
         {
             //arrange
             var currentAssembly = Assembly.GetCallingAssembly();
@@ -103,9 +135,73 @@ namespace IocLite.Unit.Container
             //act + assert
             Assert.That(() => _container.Register(new List<IRegistry>
             {
-                new RegistryWithInstanceInDefaultScope(currentAssembly)
+                new RegistryWithInstanceInTransientScope(currentAssembly)
             }),
             Throws.Exception.TypeOf(typeof(InvalidOperationException)));
+        }
+
+        /// <summary>
+        /// Cannot register an interface with a plugin type that is also an interface
+        /// </summary>
+        [Test]
+        public void Register_DependencyMapWithInterfaceMappedToInterface_ThrowsException()
+        {
+            //arrange
+
+            //act + assert
+            Assert.That(() => _container.Register(new List<IRegistry>
+            {
+                new RegistryWithInterfaceServiceTypeAndInterfacePluginType()
+            }),
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(ITypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
+        }
+
+        /// <summary>
+        /// Cannot register an abstract class with a plug in type that is also an abstract type
+        /// </summary>
+        [Test]
+        public void Register_DependencyMapWithAbstractTypeMappedToAbstractType_ThrowsException()
+        {
+            //arrange
+
+            //act + assert
+            Assert.That(() => _container.Register(new List<IRegistry>
+            {
+                new RegistryWithAbstractServiceTypeAndAbstractPluginType()
+            }),
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(BaseTypeWithDefaultConstructor))));
+        }
+
+        /// <summary>
+        /// Cannot register an abstract class with a plug in type that is an interface
+        /// </summary>
+        [Test]
+        public void Register_DependencyMapWithAbstractTypeMappedToInterface_ThrowsException()
+        {
+            //arrange
+
+            //act + assert
+            Assert.That(() => _container.Register(new List<IRegistry>
+            {
+                new RegistryWithInterfaceServiceTypeAndAbstractPluginType()
+            }),
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
+        }
+
+        /// <summary>
+        /// Cannot register the same map (same service to same plugin) multiple times
+        /// </summary>
+        [Test]
+        public void Register_DependencyMapWithMultipleMapsUsingSameType_TypeIsConcrete_ThrowsException()
+        {
+            //arrange
+
+            //act + assert
+            Assert.That(() => _container.Register(new List<IRegistry>
+            {
+                new RegistryWithMultipleMapsUsingSameConcreteType()
+            }),
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Exceptions.CannotHaveMultipleBindingsForSameServiceAndPluginType, typeof(TypeWithDefaultConstructor), typeof(TypeWithDefaultConstructor))));
         }
 
         #endregion
@@ -187,7 +283,7 @@ namespace IocLite.Unit.Container
             //arrange
             _container.Register(new List<IRegistry>
             {
-                new RegistryWithDefault()
+                new RegistryWithTransient()
             });
 
             const string propValue1 = "string1";
@@ -213,7 +309,7 @@ namespace IocLite.Unit.Container
             //arrange
             _container.Register(new List<IRegistry>
             {
-                new RegistryWithDefault()
+                new RegistryWithTransient()
             });
 
             var typeToResolve = typeof(TypeWithDefaultConstructor);
@@ -317,7 +413,7 @@ namespace IocLite.Unit.Container
 
             _container.Register(new List<IRegistry>
             {
-                new RegistryWithInstance(currentAssembly)
+                new RegistryWithAbstractTypeInstance(currentAssembly)
             });
 
             //act
@@ -452,11 +548,11 @@ namespace IocLite.Unit.Container
         }
     }
 
-    internal class RegistryWithDefault : Registry
+    internal class RegistryWithTransient : Registry
     {
         public override void Load()
         {
-            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().InDefaultScope();
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().InTransientScope();
         }
     }
 
@@ -476,11 +572,19 @@ namespace IocLite.Unit.Container
         }
     }
 
-    internal class RegistryWithInstance : Registry
+    internal class RegistryWithHttpRequest : Registry
+    {
+        public override void Load()
+        {
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().InHttpRequestScope();
+        }
+    }
+
+    internal class RegistryWithAbstractTypeInstance : Registry
     {
         private readonly Assembly _currentAssembly;
 
-        public RegistryWithInstance(Assembly currentAssembly)
+        public RegistryWithAbstractTypeInstance(Assembly currentAssembly)
         {
             _currentAssembly = currentAssembly;
         }
@@ -491,18 +595,66 @@ namespace IocLite.Unit.Container
         }
     }
 
-    internal class RegistryWithInstanceInDefaultScope : Registry
+    internal class RegistryWithConcreteTypeInstance : Registry
+    {
+        private readonly TypeWithDefaultConstructor _typeWithDefaultConstructor;
+
+        public RegistryWithConcreteTypeInstance(TypeWithDefaultConstructor typeWithDefaultConstructor)
+        {
+            _typeWithDefaultConstructor = typeWithDefaultConstructor;
+        }
+
+        public override void Load()
+        {
+            For<ITypeWithDefaultConstructor>().Use(_typeWithDefaultConstructor);
+        }
+    }
+
+    internal class RegistryWithInstanceInTransientScope : Registry
     {
         private readonly Assembly _currentAssembly;
 
-        public RegistryWithInstanceInDefaultScope(Assembly currentAssembly)
+        public RegistryWithInstanceInTransientScope(Assembly currentAssembly)
         {
             _currentAssembly = currentAssembly;
         }
 
         public override void Load()
         {
-            For<Assembly>().Use(_currentAssembly).InDefaultScope();
+            For<Assembly>().Use(_currentAssembly).InTransientScope();
+        }
+    }
+
+    internal class RegistryWithMultipleMapsUsingSameConcreteType : Registry
+    {
+        public override void Load()
+        {
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>();
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>();
+        }
+    }
+
+    internal class RegistryWithInterfaceServiceTypeAndInterfacePluginType : Registry
+    {
+        public override void Load()
+        {
+            For<ITypeWithDefaultConstructor>().Use<ITypeWithDefaultConstructor>();
+        }
+    }
+
+    internal class RegistryWithAbstractServiceTypeAndAbstractPluginType : Registry
+    {
+        public override void Load()
+        {
+            For<BaseTypeWithDefaultConstructor>().Use<BaseTypeWithDefaultConstructor>();
+        }
+    }
+
+    internal class RegistryWithInterfaceServiceTypeAndAbstractPluginType : Registry
+    {
+        public override void Load()
+        {
+            For<ITypeWithDefaultConstructor>().Use<BaseTypeWithDefaultConstructor>();
         }
     }
 
@@ -533,6 +685,11 @@ namespace IocLite.Unit.Container
     }
 
     internal interface ITypeWithDefaultConstructor
+    {
+        
+    }
+
+    internal abstract class BaseTypeWithDefaultConstructor : ITypeWithDefaultConstructor
     {
         
     }

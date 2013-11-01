@@ -20,7 +20,7 @@ namespace IocLite
 
         public Binding()
         {
-            ObjectScope = ObjectScope.Default;
+            ObjectScope = ObjectScope.Transient;
         }
 
         public Binding(Type serviceType, Type pluginType, object instance = null, string name = null)

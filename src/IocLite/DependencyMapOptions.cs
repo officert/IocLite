@@ -2,24 +2,24 @@
 
 namespace IocLite
 {
-    public class DependencyOptions : IDependencyOptions
+    public class DependencyMapMapOptions : IDependencyMapOptions
     {
         private readonly IBinding _binding;
 
-        public DependencyOptions(IBinding binding)
+        public DependencyMapMapOptions(IBinding binding)
         {
             _binding = binding;
         }
 
-        public DependencyOptions Named(string name)
+        public IDependencyMapOptions Named(string name)
         {
             _binding.Name = name;
-            return new DependencyOptions(_binding);
+            return new DependencyMapMapOptions(_binding);
         }
 
-        public void InDefaultScope()
+        public void InTransientScope()
         {
-            _binding.ObjectScope = ObjectScope.Default;
+            _binding.ObjectScope = ObjectScope.Transient;
         }
 
         public void InSingletonScope()
@@ -38,10 +38,10 @@ namespace IocLite
         }
     }
 
-    public interface IDependencyOptions
+    public interface IDependencyMapOptions
     {
-        DependencyOptions Named(string name);
-        void InDefaultScope();
+        IDependencyMapOptions Named(string name);
+        void InTransientScope();
         void InSingletonScope();
         void InHttpRequestScope();
         void InThreadScope();

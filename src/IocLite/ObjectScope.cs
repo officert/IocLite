@@ -6,7 +6,7 @@ namespace IocLite
         /// <summary>
         /// The container will create a new instance every time one is requested.
         /// </summary>
-        Default,
+        Transient,
         /// <summary>
         /// The container will create a single instance and return that instance for the duration of the application.
         /// </summary>

@@ -61,7 +61,7 @@ namespace IocLite.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot create an instance of an abstract type &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Cannot create an instance of abstract type &apos;{0}&apos;..
         /// </summary>
         internal static string CannotCreateInstanceOfAbstractType {
             get {
@@ -70,11 +70,20 @@ namespace IocLite.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No dependency map for plugin type &apos;{0}&apos; exists..
+        ///   Looks up a localized string similar to Multiple bindings using Service type &apos;{0}&apos; and Plugin type &apos;{1}&apos; were found. Cannot have multiple bindings for the same Service type and Plugin type..
         /// </summary>
-        internal static string NoDependencyMapFound {
+        internal static string CannotHaveMultipleBindingsForSameServiceAndPluginType {
             get {
-                return ResourceManager.GetString("NoDependencyMapFound", resourceCulture);
+                return ResourceManager.GetString("CannotHaveMultipleBindingsForSameServiceAndPluginType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot plug in abstract type &apos;{0}&apos; to service type &apos;{1}&apos;. Abstract types cannot be used as Plugin types..
+        /// </summary>
+        internal static string CannotUseAnAbstractTypeForAPluginType {
+            get {
+                return ResourceManager.GetString("CannotUseAnAbstractTypeForAPluginType", resourceCulture);
             }
         }
     }

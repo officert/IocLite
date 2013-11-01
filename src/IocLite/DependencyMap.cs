@@ -5,7 +5,7 @@ namespace IocLite
     public class DependencyMap<TServiceType>
     {
         private readonly IRegistry _registry;
-        private readonly Binding _binding;
+        private readonly IBinding _binding;
 
         public DependencyMap(IRegistry registry)
         {
@@ -23,16 +23,16 @@ namespace IocLite
 
         public object Instance { get; set; }
 
-        public DependencyOptions Use<TPluginType>() where TPluginType : TServiceType
+        public IDependencyMapOptions Use<TPluginType>() where TPluginType : TServiceType
         {
             _binding.PluginType = typeof(TPluginType);
 
             _registry.RegisterBinding(_binding);
 
-            return new DependencyOptions(_binding);
+            return new DependencyMapMapOptions(_binding);
         }
 
-        public DependencyOptions Use<TPluginType>(TPluginType type) where TPluginType : TServiceType
+        public IDependencyMapOptions Use<TPluginType>(TPluginType type) where TPluginType : TServiceType
         {
             _binding.Instance = type;
             _binding.ObjectScope = ObjectScope.Singleton;   //if you provide an instance, the registration will default to singleton scope
@@ -40,7 +40,7 @@ namespace IocLite
             _binding.PluginType = typeof(TPluginType);
             _registry.RegisterBinding(_binding);
 
-            return new DependencyOptions(_binding);
+            return new DependencyMapMapOptions(_binding);
         }
     }
 }

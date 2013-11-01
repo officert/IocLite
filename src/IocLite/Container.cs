@@ -37,6 +37,13 @@ namespace IocLite
                     Ensure.ArgumentIsNotNull(binding, "binding");
                     Ensure.ArgumentIsNotNull(binding.ObjectScope, "binding.ObjectScope");
 
+                    if (binding.Instance == null && (binding.PluginType.IsAbstract || binding.PluginType.IsInterface))  //if an instance is provided, the plugin type CANNOT be abstract
+                        throw new InvalidOperationException(string.Format(Exceptions.CannotUseAnAbstractTypeForAPluginType, binding.PluginType, binding.ServiceType));
+
+                    if (BindingRegistrations.Any(x => x.Binding.ServiceType == binding.ServiceType &&
+                                                        x.Binding.PluginType == binding.PluginType))
+                        throw new InvalidOperationException(string.Format(Exceptions.CannotHaveMultipleBindingsForSameServiceAndPluginType, binding.ServiceType, binding.PluginType));
+
                     BindingRegistrations.Add(new BindingRegistration
                     {
                         Binding = binding,
@@ -78,7 +85,7 @@ namespace IocLite
             }
         }
 
-        public void Release(Type/**/ type)
+        public void Release(Type type)
         {
             //TODO: need to figure out what exactly Release should do - not sure the current behaviour is right
 
@@ -129,7 +136,7 @@ namespace IocLite
 
             //TODO: for now if they registration an interface multiple times throw an exception because we don't have a way to determine the default binding.
             //TODO: need a way to determine the default binding for a PluginType
-            if (registrations.Count() > 1) throw new InvalidOperationException(string.Format("Cannot determine the default registration for Plugintype '{0}'", type));
+            if (registrations.Count() > 1) throw new InvalidOperationException(string.Format("Cannot determine the default binding for Plugintype '{0}'", type));
 
             var reg = registrations.FirstOrDefault();
 
@@ -142,8 +149,6 @@ namespace IocLite
         private IEnumerable<BindingRegistration> FindBindingRegistrations(Type type)
         {
             Ensure.ArgumentIsNotNull(type, "type");
-
-            if (type == null) return null;
 
             if (type.IsInterface)
             {
@@ -173,8 +178,8 @@ namespace IocLite
 
             switch (objectScope)
             {
-                case ObjectScope.Default:
-                    return new MultiInstanceObjectFactory();
+                case ObjectScope.Transient:
+                    return new TransientInstanceObjectFactory();
 
                 case ObjectScope.Singleton:
                     return new SingletonInstanceObjectFactory(instance);
@@ -186,7 +191,7 @@ namespace IocLite
                     return new HttpRequestInstanceObjectFactory();
 
                 default:
-                    return new MultiInstanceObjectFactory();
+                    return new TransientInstanceObjectFactory();
             }
         }
 

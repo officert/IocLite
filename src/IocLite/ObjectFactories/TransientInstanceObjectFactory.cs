@@ -2,7 +2,7 @@
 
 namespace IocLite.ObjectFactories
 {
-    public class MultiInstanceObjectFactory : IObjectFactory
+    public class TransientInstanceObjectFactory : IObjectFactory
     {
         public object GetObject(IBinding binding, Container container)
         {

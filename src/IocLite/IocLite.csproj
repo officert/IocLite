@@ -44,7 +44,7 @@
     <Compile Include="BindingRegistration.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="DependencyMap.cs" />
-    <Compile Include="DependencyOptions.cs" />
+    <Compile Include="DependencyMapOptions.cs" />
     <Compile Include="Ensure.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Interfaces\IContainer.cs" />
@@ -53,7 +53,7 @@
     <Compile Include="Interfaces\IObjectFactory.cs" />
     <Compile Include="Interfaces\IRegistry.cs" />
     <Compile Include="ObjectFactories\HttpRequestInstanceObjectFactory.cs" />
-    <Compile Include="ObjectFactories\MultiInstanceObjectFactory.cs" />
+    <Compile Include="ObjectFactories\TransientInstanceObjectFactory.cs" />
     <Compile Include="ObjectFactories\SingletonInstanceObjectFactory.cs" />
     <Compile Include="ObjectFactories\ThreadInstanceObjectFactory.cs" />
     <Compile Include="ObjectScope.cs" />

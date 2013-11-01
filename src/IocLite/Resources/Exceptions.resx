@@ -118,9 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CannotCreateInstanceOfAbstractType" xml:space="preserve">
-    <value>Cannot create an instance of an abstract type '{0}'.</value>
+    <value>Cannot create an instance of abstract type '{0}'.</value>
   </data>
-  <data name="NoDependencyMapFound" xml:space="preserve">
-    <value>No dependency map for plugin type '{0}' exists.</value>
+  <data name="CannotHaveMultipleBindingsForSameServiceAndPluginType" xml:space="preserve">
+    <value>Multiple bindings using Service type '{0}' and Plugin type '{1}' were found. Cannot have multiple bindings for the same Service type and Plugin type.</value>
+  </data>
+  <data name="CannotUseAnAbstractTypeForAPluginType" xml:space="preserve">
+    <value>Cannot plug in abstract type '{0}' to service type '{1}'. Abstract types cannot be used as Plugin types.</value>
   </data>
 </root>
