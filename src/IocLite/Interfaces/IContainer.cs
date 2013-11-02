@@ -6,12 +6,12 @@ namespace IocLite.Interfaces
     public interface IContainer
     {
         object Resolve(Type type);
-        T Resolve<T>();
+        object Resolve<T>();
         IEnumerable<object> ResolveAll(Type type);
 
         object TryResolve(Type type);
 
-        void Release(Type type);
+        //void Release(Type type);
 
         void Register(IList<IRegistry> registries);
     }

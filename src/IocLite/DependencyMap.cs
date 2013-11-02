@@ -42,5 +42,14 @@ namespace IocLite
 
             return new DependencyMapMapOptions(_binding);
         }
+
+        //public IDependencyMapOptions UseItself()
+        //{
+        //    _binding.PluginType = typeof(TServiceType);
+
+        //    _registry.RegisterBinding(_binding);
+
+        //    return new DependencyMapMapOptions(_binding); 
+        //}
     }
 }

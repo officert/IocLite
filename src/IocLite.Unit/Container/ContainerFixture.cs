@@ -153,7 +153,7 @@ namespace IocLite.Unit.Container
             {
                 new RegistryWithInterfaceServiceTypeAndInterfacePluginType()
             }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(ITypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Resources.Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(ITypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace IocLite.Unit.Container
             {
                 new RegistryWithAbstractServiceTypeAndAbstractPluginType()
             }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(BaseTypeWithDefaultConstructor))));
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Resources.Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(BaseTypeWithDefaultConstructor))));
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace IocLite.Unit.Container
             {
                 new RegistryWithInterfaceServiceTypeAndAbstractPluginType()
             }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Resources.Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
         }
 
         /// <summary>
@@ -201,7 +201,23 @@ namespace IocLite.Unit.Container
             {
                 new RegistryWithMultipleMapsUsingSameConcreteType()
             }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Exceptions.CannotHaveMultipleBindingsForSameServiceAndPluginType, typeof(TypeWithDefaultConstructor), typeof(TypeWithDefaultConstructor))));
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Resources.Exceptions.CannotHaveMultipleBindingsForSameServiceAndPluginType, typeof(TypeWithDefaultConstructor), typeof(TypeWithDefaultConstructor))));
+        }
+
+        [Test]
+        [Ignore("Need to figure out how to deal with multiple bindings for a plugin type")]
+        public void Register_AllowsMultipleMapsWithSameServiceType_DifferentPluginImplementations()
+        {
+            //arrange
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginType()
+            });
+
+            //act
+            var instance = _container.Resolve<ITypeWithDefaultConstructor>();
+
+            //assert
         }
 
         #endregion
@@ -261,7 +277,7 @@ namespace IocLite.Unit.Container
 
             //act + assert
             Assert.That(() => _container.Resolve(typeToResolve),
-                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(Exceptions.CannotCreateInstanceOfAbstractType, typeToResolve)));
+                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(Resources.Exceptions.CannotCreateInstanceOfAbstractType, typeToResolve)));
         }
 
         [Test]
@@ -658,14 +674,36 @@ namespace IocLite.Unit.Container
         }
     }
 
+    internal class RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginType : Registry
+    {
+        public override void Load()
+        {
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>();
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructorAlternateImpl>();
+        }
+    }
+
     /// <summary>
     /// Type with no dependencies.
     /// </summary>
-    internal class TypeWithDefaultConstructor : ITypeWithDefaultConstructor
+    internal class TypeWithDefaultConstructor : BaseTypeWithDefaultConstructor, ITypeWithDefaultConstructor
     {
         public string Foobar { get; set; }
 
         public TypeWithDefaultConstructor()
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// Type with no dependencies.
+    /// </summary>
+    internal class TypeWithDefaultConstructorAlternateImpl : BaseTypeWithDefaultConstructor, ITypeWithDefaultConstructor
+    {
+        public string Foobar { get; set; }
+
+        public TypeWithDefaultConstructorAlternateImpl()
         {
 
         }

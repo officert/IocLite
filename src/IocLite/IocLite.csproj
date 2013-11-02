@@ -42,11 +42,13 @@
   <ItemGroup>
     <Compile Include="Binding.cs" />
     <Compile Include="BindingRegistration.cs" />
+    <Compile Include="BindingResolver.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="DependencyMap.cs" />
     <Compile Include="DependencyMapOptions.cs" />
     <Compile Include="Ensure.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Interfaces\IBindingResolver.cs" />
     <Compile Include="Interfaces\IContainer.cs" />
     <Compile Include="Interfaces\IContainerAdapter.cs" />
     <Compile Include="Interfaces\IBinding.cs" />

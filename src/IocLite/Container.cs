@@ -5,30 +5,27 @@ using System.Linq;
 using IocLite.Extensions;
 using IocLite.Interfaces;
 using IocLite.ObjectFactories;
-using IocLite.Resources;
 
 namespace IocLite
 {
     public class Container : IContainer
     {
         internal readonly ConcurrentBag<BindingRegistration> BindingRegistrations;
+        private readonly IBindingResolver _bindingResolver;
 
         private readonly object _objetFactoryLock = new object();
-
-        private IEnumerable<IRegistry> _registries;
 
         public Container()
         {
             BindingRegistrations = new ConcurrentBag<BindingRegistration>();
+            _bindingResolver = new BindingResolver();
         }
 
         public void Register(IList<IRegistry> registries)
         {
             Ensure.ArgumentIsNotNull(registries, "registries");
 
-            _registries = registries;
-
-            foreach (var registry in _registries)
+            foreach (var registry in registries)
             {
                 registry.Load();
 
@@ -37,12 +34,7 @@ namespace IocLite
                     Ensure.ArgumentIsNotNull(binding, "binding");
                     Ensure.ArgumentIsNotNull(binding.ObjectScope, "binding.ObjectScope");
 
-                    if (binding.Instance == null && (binding.PluginType.IsAbstract || binding.PluginType.IsInterface))  //if an instance is provided, the plugin type CANNOT be abstract
-                        throw new InvalidOperationException(string.Format(Exceptions.CannotUseAnAbstractTypeForAPluginType, binding.PluginType, binding.ServiceType));
-
-                    if (BindingRegistrations.Any(x => x.Binding.ServiceType == binding.ServiceType &&
-                                                        x.Binding.PluginType == binding.PluginType))
-                        throw new InvalidOperationException(string.Format(Exceptions.CannotHaveMultipleBindingsForSameServiceAndPluginType, binding.ServiceType, binding.PluginType));
+                    ValidateBindings(binding);
 
                     BindingRegistrations.Add(new BindingRegistration
                     {
@@ -53,20 +45,37 @@ namespace IocLite
             }
         }
 
-        public object Resolve(Type type)
+        private void ValidateBindings(IBinding binding)
         {
-            return ResolveInstance(type);
+            if (binding.Instance == null && (binding.PluginType.IsAnAbstraction()))
+                //if an instance is provided, the plugin type CANNOT be abstract
+                throw new InvalidOperationException(string.Format(Resources.Exceptions.CannotUseAnAbstractTypeForAPluginType,
+                    binding.PluginType, binding.ServiceType));
+
+            if (BindingRegistrations.Any(x => x.Binding.ServiceType == binding.ServiceType && x.Binding.PluginType == binding.PluginType))
+                throw new InvalidOperationException(string.Format(Resources.Exceptions.CannotHaveMultipleBindingsForSameServiceAndPluginType, binding.ServiceType, binding.PluginType));
         }
 
-        public T Resolve<T>()
+        public object Resolve(Type type)
         {
-            var type = typeof(T);
-            return (T)ResolveInstance(type);
+            return ResolveInstanceOfService(type);
+        }
+
+        public object Resolve<TService>()
+        {
+            var type = typeof(TService);
+            return ResolveInstanceOfService(type);
         }
 
         public IEnumerable<object> ResolveAll(Type type)
         {
             Ensure.ArgumentIsNotNull(type, "type");
+
+            //var registrations = FindBindingRegistrations(type);
+
+            //if (registrations == null || !registrations.Any()) return CreateObjectGraph(type);
+
+            //return registrations.f
 
             throw new NotImplementedException();
         }
@@ -77,7 +86,7 @@ namespace IocLite
 
             try
             {
-                return ResolveInstance(type);
+                return ResolveInstanceOfService(type);
             }
             catch (Exception ex)    //TODO: catch more specific exceptions here
             {
@@ -85,30 +94,32 @@ namespace IocLite
             }
         }
 
-        public void Release(Type type)
-        {
-            //TODO: need to figure out what exactly Release should do - not sure the current behaviour is right
+        //public void Release(Type type)
+        //{
+        //    //TODO: need to figure out what exactly Release should do - not sure the current behaviour is right
 
-            Ensure.ArgumentIsNotNull(type, "type");
+        //    Ensure.ArgumentIsNotNull(type, "type");
 
-            var binding = FindBindingRegistrations(type).FirstOrDefault();
+        //    var binding = FindBindingRegistrations(type).FirstOrDefault();
 
-            if (binding == null) return;
+        //    if (binding == null) return;
 
-            binding.Binding.Instance = null;
+        //    binding.Binding.Instance = null;
 
-            //binding.Dispose();
-        }
+        //    //binding.Dispose();
+        //}
 
         internal object CreateObjectGraph(Type type)
         {
             Ensure.ArgumentIsNotNull(type, "type");
 
             if (type.IsAbstract || type.IsInterface)
-                throw new InvalidOperationException(string.Format(Exceptions.CannotCreateInstanceOfAbstractType, type));
+                throw new InvalidOperationException(string.Format(Resources.Exceptions.CannotCreateInstanceOfAbstractType, type));
 
             var constructors = type.GetConstructors();
-            var ctor = constructors.FirstOrDefault();   //TODO: need better algorithm for choosing the constructor to use - should be something like
+            var ctor = constructors.FirstOrDefault();
+
+            //TODO: need better algorithm for choosing the constructor to use - should be something like
             //TODO: whichever constructor we can resolve the most dependencies for
 
             if (type.HasADefaultConstructor() || ctor == null)
@@ -126,17 +137,17 @@ namespace IocLite
 
         #region Private Helpers
 
-        private object ResolveInstance(Type type)
+        private object ResolveInstanceOfService(Type service)
         {
-            Ensure.ArgumentIsNotNull(type, "type");
+            Ensure.ArgumentIsNotNull(service, "type");
 
-            var registrations = FindBindingRegistrations(type);
+            var registrations = _bindingResolver.ResolveBindings(service, BindingRegistrations);
 
-            if (registrations == null || !registrations.Any()) return CreateObjectGraph(type);
+            if (registrations == null || !registrations.Any()) return CreateObjectGraph(service);
 
             //TODO: for now if they registration an interface multiple times throw an exception because we don't have a way to determine the default binding.
             //TODO: need a way to determine the default binding for a PluginType
-            if (registrations.Count() > 1) throw new InvalidOperationException(string.Format("Cannot determine the default binding for Plugintype '{0}'", type));
+            if (registrations.Count() > 1) throw new InvalidOperationException(string.Format("Cannot determine the default binding for Plugintype '{0}'", service));
 
             var reg = registrations.FirstOrDefault();
 
@@ -144,29 +155,6 @@ namespace IocLite
             {
                 return reg.ObjectFactory.GetObject(reg.Binding, this);
             }
-        }
-
-        private IEnumerable<BindingRegistration> FindBindingRegistrations(Type type)
-        {
-            Ensure.ArgumentIsNotNull(type, "type");
-
-            if (type.IsInterface)
-            {
-                //interfaces can have multiple implementations - so it can have multiple bindings.
-                return BindingRegistrations.Where(x => x.Binding.ServiceType == type);
-            }
-
-            var registrations = BindingRegistrations.Where(x => x.Binding.PluginType == type);
-
-            if (registrations == null || !registrations.Any()) return null;
-
-            if (registrations.Count() > 1)
-                throw new InvalidOperationException("You cannot have multple bindings for a concerete implementation.");
-
-            return new List<BindingRegistration>
-            {
-                registrations.FirstOrDefault()
-            };
         }
 
         private IObjectFactory GetObjectFactory(ObjectScope objectScope, object instance = null)

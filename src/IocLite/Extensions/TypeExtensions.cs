@@ -9,5 +9,10 @@ namespace IocLite.Extensions
             Ensure.ArgumentIsNotNull(type, "type");
             return type.GetConstructor(Type.EmptyTypes) != null;
         }
+
+        public static bool IsAnAbstraction(this Type type)
+        {
+            return type.IsAbstract || type.IsInterface;
+        }
     }
 }
