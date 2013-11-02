@@ -2,9 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using IocLite.Exceptions;
 using IocLite.Extensions;
 using IocLite.Interfaces;
 using IocLite.ObjectFactories;
+using IocLite.Resources;
 
 namespace IocLite
 {
@@ -49,11 +51,11 @@ namespace IocLite
         {
             if (binding.Instance == null && (binding.PluginType.IsAnAbstraction()))
                 //if an instance is provided, the plugin type CANNOT be abstract
-                throw new InvalidOperationException(string.Format(Resources.Exceptions.CannotUseAnAbstractTypeForAPluginType,
+                throw new InvalidOperationException(string.Format(ExceptionMessages.CannotUseAnAbstractTypeForAPluginType,
                     binding.PluginType, binding.ServiceType));
 
             if (BindingRegistrations.Any(x => x.Binding.ServiceType == binding.ServiceType && x.Binding.PluginType == binding.PluginType))
-                throw new InvalidOperationException(string.Format(Resources.Exceptions.CannotHaveMultipleBindingsForSameServiceAndPluginType, binding.ServiceType, binding.PluginType));
+                throw new InvalidOperationException(string.Format(ExceptionMessages.CannotHaveMultipleBindingsForSameServiceAndPluginType, binding.ServiceType, binding.PluginType));
         }
 
         public object Resolve(Type type)
@@ -80,13 +82,13 @@ namespace IocLite
             throw new NotImplementedException();
         }
 
-        public object TryResolve(Type type)
+        public object TryResolve(Type service)
         {
-            Ensure.ArgumentIsNotNull(type, "type");
+            Ensure.ArgumentIsNotNull(service, "service");
 
             try
             {
-                return ResolveInstanceOfService(type);
+                return ResolveInstanceOfService(service);
             }
             catch (Exception ex)    //TODO: catch more specific exceptions here
             {
@@ -114,7 +116,7 @@ namespace IocLite
             Ensure.ArgumentIsNotNull(type, "type");
 
             if (type.IsAbstract || type.IsInterface)
-                throw new InvalidOperationException(string.Format(Resources.Exceptions.CannotCreateInstanceOfAbstractType, type));
+                throw new InvalidOperationException(string.Format(ExceptionMessages.CannotCreateInstanceOfAbstractType, type));
 
             var constructors = type.GetConstructors();
             var ctor = constructors.FirstOrDefault();
@@ -147,7 +149,7 @@ namespace IocLite
 
             //TODO: for now if they registration an interface multiple times throw an exception because we don't have a way to determine the default binding.
             //TODO: need a way to determine the default binding for a PluginType
-            if (registrations.Count() > 1) throw new InvalidOperationException(string.Format("Cannot determine the default binding for Plugintype '{0}'", service));
+            if (registrations.Count() > 1) throw new BindingConfigurationException(string.Format("Cannot determine the default binding for Plugintype '{0}'", service));
 
             var reg = registrations.FirstOrDefault();
 

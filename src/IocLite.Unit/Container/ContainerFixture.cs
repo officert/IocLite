@@ -153,7 +153,7 @@ namespace IocLite.Unit.Container
             {
                 new RegistryWithInterfaceServiceTypeAndInterfacePluginType()
             }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Resources.Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(ITypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(ExceptionMessages.CannotUseAnAbstractTypeForAPluginType, typeof(ITypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace IocLite.Unit.Container
             {
                 new RegistryWithAbstractServiceTypeAndAbstractPluginType()
             }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Resources.Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(BaseTypeWithDefaultConstructor))));
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(ExceptionMessages.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(BaseTypeWithDefaultConstructor))));
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace IocLite.Unit.Container
             {
                 new RegistryWithInterfaceServiceTypeAndAbstractPluginType()
             }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Resources.Exceptions.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(ExceptionMessages.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace IocLite.Unit.Container
             {
                 new RegistryWithMultipleMapsUsingSameConcreteType()
             }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(Resources.Exceptions.CannotHaveMultipleBindingsForSameServiceAndPluginType, typeof(TypeWithDefaultConstructor), typeof(TypeWithDefaultConstructor))));
+            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(ExceptionMessages.CannotHaveMultipleBindingsForSameServiceAndPluginType, typeof(TypeWithDefaultConstructor), typeof(TypeWithDefaultConstructor))));
         }
 
         [Test]
@@ -277,7 +277,7 @@ namespace IocLite.Unit.Container
 
             //act + assert
             Assert.That(() => _container.Resolve(typeToResolve),
-                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(Resources.Exceptions.CannotCreateInstanceOfAbstractType, typeToResolve)));
+                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(ExceptionMessages.CannotCreateInstanceOfAbstractType, typeToResolve)));
         }
 
         [Test]
@@ -288,7 +288,7 @@ namespace IocLite.Unit.Container
 
             //act + assert
             Assert.That(() => _container.Resolve(typeToResolve),
-                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(Exceptions.CannotCreateInstanceOfAbstractType, typeToResolve)));
+                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(ExceptionMessages.CannotCreateInstanceOfAbstractType, typeToResolve)));
         }
 
         #region Default Scope Tests
