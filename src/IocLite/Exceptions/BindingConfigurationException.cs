@@ -5,10 +5,6 @@ namespace IocLite.Exceptions
 {
     public class BindingConfigurationException : Exception
     {
-        public BindingConfigurationException()
-        {
-        }
-
         public BindingConfigurationException(string message)
             : base(message)
         {

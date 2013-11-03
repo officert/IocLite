@@ -5,8 +5,8 @@ namespace IocLite.Interfaces
 {
     public interface IContainer
     {
-        object Resolve(Type type);
-        object Resolve<T>();
+        object Resolve(Type type, string name = null);
+        object Resolve<T>(string name = null);
         IEnumerable<object> ResolveAll(Type type);
 
         object TryResolve(Type type);

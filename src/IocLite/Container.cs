@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using IocLite.Exceptions;
 using IocLite.Extensions;
 using IocLite.Interfaces;
@@ -14,7 +15,6 @@ namespace IocLite
     {
         internal readonly ConcurrentBag<BindingRegistration> BindingRegistrations;
         private readonly IBindingResolver _bindingResolver;
-
         private readonly object _objetFactoryLock = new object();
 
         public Container()
@@ -47,26 +47,15 @@ namespace IocLite
             }
         }
 
-        private void ValidateBindings(IBinding binding)
+        public object Resolve(Type type, string name = null)
         {
-            if (binding.Instance == null && (binding.PluginType.IsAnAbstraction()))
-                //if an instance is provided, the plugin type CANNOT be abstract
-                throw new InvalidOperationException(string.Format(ExceptionMessages.CannotUseAnAbstractTypeForAPluginType,
-                    binding.PluginType, binding.ServiceType));
-
-            if (BindingRegistrations.Any(x => x.Binding.ServiceType == binding.ServiceType && x.Binding.PluginType == binding.PluginType))
-                throw new InvalidOperationException(string.Format(ExceptionMessages.CannotHaveMultipleBindingsForSameServiceAndPluginType, binding.ServiceType, binding.PluginType));
+            return ResolveInstanceOfService(type, name);
         }
 
-        public object Resolve(Type type)
-        {
-            return ResolveInstanceOfService(type);
-        }
-
-        public object Resolve<TService>()
+        public object Resolve<TService>(string name = null)
         {
             var type = typeof(TService);
-            return ResolveInstanceOfService(type);
+            return ResolveInstanceOfService(type, name);
         }
 
         public IEnumerable<object> ResolveAll(Type type)
@@ -139,7 +128,7 @@ namespace IocLite
 
         #region Private Helpers
 
-        private object ResolveInstanceOfService(Type service)
+        private object ResolveInstanceOfService(Type service, string name = null)
         {
             Ensure.ArgumentIsNotNull(service, "type");
 
@@ -182,6 +171,29 @@ namespace IocLite
 
                 default:
                     return new TransientInstanceObjectFactory();
+            }
+        }
+
+        private void ValidateBindings(IBinding binding)
+        {
+            if (binding.Instance == null && (binding.PluginType.IsAnAbstraction()))
+                //if an instance is provided, the plugin type CANNOT be abstract
+                throw new InvalidOperationException(string.Format(ExceptionMessages.CannotUseAnAbstractTypeForAPluginType,
+                    binding.PluginType, binding.ServiceType));
+
+            var otherBindingsForSameService = BindingRegistrations.Where(x => x.Binding.ServiceType == binding.ServiceType);
+
+            if (otherBindingsForSameService.Any())
+            {
+                var bindingExceptionMessageBuilder = new StringBuilder();
+
+                foreach (var bindingRegistration in otherBindingsForSameService)
+                {
+                    bindingExceptionMessageBuilder.Append(string.Format("For<{0}>().Use<{1}>(); {2}", bindingRegistration.Binding.ServiceType, bindingRegistration.Binding.PluginType, Environment.NewLine));
+                }
+                bindingExceptionMessageBuilder.Append(string.Format("For<{0}>().Use<{1}>();", binding.ServiceType, binding.PluginType));
+
+                throw new BindingConfigurationException(string.Format(ExceptionMessages.CannotHaveMultipleBindingsForSameServiceAndPluginType, binding.ServiceType, bindingExceptionMessageBuilder, Environment.NewLine));
             }
         }
 

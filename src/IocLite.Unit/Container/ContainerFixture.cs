@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using IocLite.Exceptions;
 using IocLite.Interfaces;
 using IocLite.Resources;
 using NUnit.Framework;
@@ -40,7 +41,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapDoesNotSpecifyScope_TypesAreRegisteredInDefaultScope()
+        public void Register_DependencyMapDoesNotSpecifyScope_ypeIsRegisteredInDefaultScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -56,7 +57,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapSpecifiesSingletonScope_TypesAreRegisteredInSingletonScope()
+        public void Register_DependencyMapSpecifiesSingletonScope_ypeIsRegisteredInSingletonScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -72,7 +73,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapSpecifiesThreadScope_TypesAreRegisteredInThreadScope()
+        public void Register_DependencyMapSpecifiesThreadScope_ypeIsRegisteredInThreadScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -88,7 +89,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapSpecifiesHttpRequestScope_TypesAreRegisteredInHttpRequestScope()
+        public void Register_DependencyMapSpecifiesHttpRequestScope_ypeIsRegisteredInHttpRequestScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -104,7 +105,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapProvidesInstanceWithoutSpecifyingScope_TypesAreRegisteredInSingletonScope()
+        public void Register_DependencyMapProvidesInstanceWithoutSpecifyingScope_TypeIsRegisteredInSingletonScope()
         {
             //arrange
             var currentAssembly = Assembly.GetCallingAssembly();
@@ -120,6 +121,24 @@ namespace IocLite.Unit.Container
             {
                 registration.Binding.Instance.Should().Not.Be.Null();
                 registration.Binding.ObjectScope.Should().Be.EqualTo(ObjectScope.Singleton);
+            }
+        }
+
+        [Test]
+        public void Register_DependencyMapSpecifiesName_TypeIsRegisteredWithName()
+        {
+            //arrange
+
+            //act
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithNamedMap()
+            });
+
+            //assert
+            foreach (var registration in _container.BindingRegistrations)
+            {
+                registration.Binding.Name.Should().Be.EqualTo("Impl1");
             }
         }
 
@@ -188,36 +207,16 @@ namespace IocLite.Unit.Container
             Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(ExceptionMessages.CannotUseAnAbstractTypeForAPluginType, typeof(BaseTypeWithDefaultConstructor), typeof(ITypeWithDefaultConstructor))));
         }
 
-        /// <summary>
-        /// Cannot register the same map (same service to same plugin) multiple times
-        /// </summary>
         [Test]
-        public void Register_DependencyMapWithMultipleMapsUsingSameType_TypeIsConcrete_ThrowsException()
+        public void Register_MultipleMapsWithSameServiceType_DifferentPluginImplementations_ThrowsException()
         {
             //arrange
 
             //act + assert
             Assert.That(() => _container.Register(new List<IRegistry>
             {
-                new RegistryWithMultipleMapsUsingSameConcreteType()
-            }),
-            Throws.Exception.TypeOf(typeof(InvalidOperationException)).With.Message.EqualTo(string.Format(ExceptionMessages.CannotHaveMultipleBindingsForSameServiceAndPluginType, typeof(TypeWithDefaultConstructor), typeof(TypeWithDefaultConstructor))));
-        }
-
-        [Test]
-        [Ignore("Need to figure out how to deal with multiple bindings for a plugin type")]
-        public void Register_AllowsMultipleMapsWithSameServiceType_DifferentPluginImplementations()
-        {
-            //arrange
-            _container.Register(new List<IRegistry>
-            {
                 new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginType()
-            });
-
-            //act
-            var instance = _container.Resolve<ITypeWithDefaultConstructor>();
-
-            //assert
+            }), Throws.Exception.TypeOf(typeof(BindingConfigurationException)).With.Message.StartsWith(ExceptionMessages.CannotHaveMultipleBindingsForSameServiceAndPluginType.Substring(0, 10)));
         }
 
         #endregion
@@ -596,6 +595,14 @@ namespace IocLite.Unit.Container
         }
     }
 
+    internal class RegistryWithNamedMap : Registry
+    {
+        public override void Load()
+        {
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().Named("Impl1");
+        }
+    }
+
     internal class RegistryWithAbstractTypeInstance : Registry
     {
         private readonly Assembly _currentAssembly;
@@ -641,15 +648,6 @@ namespace IocLite.Unit.Container
         }
     }
 
-    internal class RegistryWithMultipleMapsUsingSameConcreteType : Registry
-    {
-        public override void Load()
-        {
-            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>();
-            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>();
-        }
-    }
-
     internal class RegistryWithInterfaceServiceTypeAndInterfacePluginType : Registry
     {
         public override void Load()
@@ -686,7 +684,7 @@ namespace IocLite.Unit.Container
     /// <summary>
     /// Type with no dependencies.
     /// </summary>
-    internal class TypeWithDefaultConstructor : BaseTypeWithDefaultConstructor, ITypeWithDefaultConstructor
+    internal class TypeWithDefaultConstructor : BaseTypeWithDefaultConstructor
     {
         public string Foobar { get; set; }
 
@@ -699,7 +697,7 @@ namespace IocLite.Unit.Container
     /// <summary>
     /// Type with no dependencies.
     /// </summary>
-    internal class TypeWithDefaultConstructorAlternateImpl : BaseTypeWithDefaultConstructor, ITypeWithDefaultConstructor
+    internal class TypeWithDefaultConstructorAlternateImpl : BaseTypeWithDefaultConstructor
     {
         public string Foobar { get; set; }
 

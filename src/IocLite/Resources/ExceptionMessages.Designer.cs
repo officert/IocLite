@@ -70,7 +70,7 @@ namespace IocLite.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple bindings using Service type &apos;{0}&apos; and Plugin type &apos;{1}&apos; were found. Cannot have multiple bindings for the same Service type and Plugin type..
+        ///   Looks up a localized string similar to Multiple bindings for Service type &apos;{0}&apos; were found. Cannot have multiple bindings for the same Service type. {2} Bindings found : {1}.
         /// </summary>
         internal static string CannotHaveMultipleBindingsForSameServiceAndPluginType {
             get {
@@ -79,7 +79,7 @@ namespace IocLite.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot plug in abstract type &apos;{0}&apos; to service type &apos;{1}&apos;. Abstract types cannot be used as Plugin types..
+        ///   Looks up a localized string similar to Cannot plug in abstract type &apos;{0}&apos; to Service type &apos;{1}&apos;. Abstract types cannot be used as Plugin types..
         /// </summary>
         internal static string CannotUseAnAbstractTypeForAPluginType {
             get {
