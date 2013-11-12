@@ -51,7 +51,6 @@
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Interfaces\IBindingResolver.cs" />
     <Compile Include="Interfaces\IContainer.cs" />
-    <Compile Include="Interfaces\IContainerAdapter.cs" />
     <Compile Include="Interfaces\IBinding.cs" />
     <Compile Include="Interfaces\IObjectFactory.cs" />
     <Compile Include="Interfaces\IRegistry.cs" />

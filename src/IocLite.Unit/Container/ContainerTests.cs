@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using IocLite.Exceptions;
@@ -12,7 +13,7 @@ namespace IocLite.Unit.Container
 {
     [TestFixture]
     [Category("Unit")]
-    public class ContainerFixture
+    public class ContainerTests
     {
         private IocLite.Container _container;
 
@@ -41,7 +42,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapDoesNotSpecifyScope_ypeIsRegisteredInDefaultScope()
+        public void Register_DependencyMapDoesNotSpecifyScope_TypeIsRegisteredInDefaultScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -57,7 +58,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapSpecifiesSingletonScope_ypeIsRegisteredInSingletonScope()
+        public void Register_DependencyMapSpecifiesSingletonScope_TypeIsRegisteredInSingletonScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -73,7 +74,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapSpecifiesThreadScope_ypeIsRegisteredInThreadScope()
+        public void Register_DependencyMapSpecifiesThreadScope_TypeIsRegisteredInThreadScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -89,7 +90,7 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_DependencyMapSpecifiesHttpRequestScope_ypeIsRegisteredInHttpRequestScope()
+        public void Register_DependencyMapSpecifiesHttpRequestScope_TypeIsRegisteredInHttpRequestScope()
         {
             //arrange + act
             _container.Register(new List<IRegistry>
@@ -208,15 +209,59 @@ namespace IocLite.Unit.Container
         }
 
         [Test]
-        public void Register_MultipleMapsWithSameServiceType_DifferentPluginImplementations_ThrowsException()
+        public void Register_MultipleMapsWithSameServiceType_DifferentPluginImplementations_Named_TypesAreRegisteredWithNames()
+        {
+            //arrange
+
+            //act
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeNamed()
+            });
+
+            //assert
+            _container.BindingRegistrations.All(x => !string.IsNullOrEmpty(x.Binding.Name)).Should().Be.True();
+        }
+
+        [Test]
+        public void Register_MultipleMapsWithSameServiceType_DifferentPluginImplementations_Unnamed_ThrowsException()
         {
             //arrange
 
             //act + assert
             Assert.That(() => _container.Register(new List<IRegistry>
             {
-                new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginType()
-            }), Throws.Exception.TypeOf(typeof(BindingConfigurationException)).With.Message.StartsWith(ExceptionMessages.CannotHaveMultipleBindingsForSameServiceAndPluginType.Substring(0, 10)));
+                new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeUnknown()
+            }), Throws.Exception.TypeOf(typeof(BindingConfigurationException)).With.Message.StartsWith(ExceptionMessages.CannotHaveMultipleDefaultBindingsForService.Substring(0, 10)));
+        }
+
+        [Test]
+        public void Register_MultipleMapsWithSameServiceType_DifferentPluginImplementations_OneNamed_OneUnnamed_TypesAreRegistered()
+        {
+            //arrange
+
+            //act
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeSomeNamed()
+            });
+
+            //assert
+            var defaultBindings = _container.BindingRegistrations.Where(x => string.IsNullOrEmpty(x.Binding.Name));
+            _container.BindingRegistrations.Count().Should().Be.EqualTo(2);
+            defaultBindings.Count().Should().Be.EqualTo(1);
+        }
+
+        [Test]
+        public void Register_MultipleMapsWithSameServiceType_DifferentPluginImplementations_BothHaveSameName_ThrowsException()
+        {
+            //arrange
+
+            //act + assert
+            Assert.That(() => _container.Register(new List<IRegistry>
+            {
+                new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeSameNames()
+            }), Throws.Exception.TypeOf(typeof(BindingConfigurationException)).With.Message.StartsWith(ExceptionMessages.CannotHaveMultipleNamedBindingsForServiceWithSameName.Substring(0, 10)));
         }
 
         #endregion
@@ -276,7 +321,7 @@ namespace IocLite.Unit.Container
 
             //act + assert
             Assert.That(() => _container.Resolve(typeToResolve),
-                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(ExceptionMessages.CannotCreateInstanceOfAbstractType, typeToResolve)));
+                Throws.Exception.TypeOf(typeof(BindingConfigurationException)).With.Message.EqualTo(string.Format(ExceptionMessages.CannotResolveAbstractServiceTypeWithNoBinding, typeToResolve)));
         }
 
         [Test]
@@ -287,7 +332,42 @@ namespace IocLite.Unit.Container
 
             //act + assert
             Assert.That(() => _container.Resolve(typeToResolve),
-                Throws.InvalidOperationException.With.Message.EqualTo(string.Format(ExceptionMessages.CannotCreateInstanceOfAbstractType, typeToResolve)));
+                Throws.Exception.TypeOf(typeof(BindingConfigurationException)).With.Message.EqualTo(string.Format(ExceptionMessages.CannotResolveAbstractServiceTypeWithNoBinding, typeToResolve)));
+        }
+
+        [Test]
+        public void Resolve_WithName_ReturnsNamedBindingInstance()
+        {
+            //arrange
+            var typeToResolve = typeof(ITypeWithDefaultConstructor);
+
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeNamed()
+            });
+
+            //act 
+            var instance = _container.Resolve(typeToResolve, "Instance1");
+
+            //assert
+            instance.Should().Not.Be.Null();
+        }
+
+        [Test]
+        public void Resolve_WithNameThatDoesNotExist_ThrowsException()
+        {
+            //arrange
+            var typeToResolve = typeof(ITypeWithDefaultConstructor);
+            var serviceNameToFind = "Foobar";
+
+            _container.Register(new List<IRegistry>
+            {
+                new RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeNamed()
+            });
+
+            //act + assert
+            Assert.That(() => _container.Resolve(typeToResolve, serviceNameToFind),
+                Throws.Exception.TypeOf(typeof(BindingConfigurationException)).With.Message.EqualTo(string.Format(ExceptionMessages.UnknownNamedService, typeToResolve.Name, serviceNameToFind)));
         }
 
         #region Default Scope Tests
@@ -672,12 +752,39 @@ namespace IocLite.Unit.Container
         }
     }
 
-    internal class RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginType : Registry
+    internal class RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeUnknown : Registry
     {
         public override void Load()
         {
             For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>();
             For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructorAlternateImpl>();
+        }
+    }
+
+    internal class RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeNamed : Registry
+    {
+        public override void Load()
+        {
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().Named("Instance1");
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructorAlternateImpl>().Named("Instance2");
+        }
+    }
+
+    internal class RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeSomeNamed : Registry
+    {
+        public override void Load()
+        {
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().Named("Instance1");
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructorAlternateImpl>();
+        }
+    }
+
+    internal class RegistryWithMultipleMapsUsingSameServiceTypeButDifferentPluginTypeSameNames : Registry
+    {
+        public override void Load()
+        {
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().Named("Instance1");
+            For<ITypeWithDefaultConstructor>().Use<TypeWithDefaultConstructorAlternateImpl>().Named("Instance1");
         }
     }
 

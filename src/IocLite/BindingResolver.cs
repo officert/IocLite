@@ -10,6 +10,7 @@ namespace IocLite
         public IEnumerable<BindingRegistration> ResolveBindings(Type service, IEnumerable<BindingRegistration> bindingRegistrations)
         {
             Ensure.ArgumentIsNotNull(service, "service");
+            Ensure.ArgumentIsNotNull(bindingRegistrations, "bindingRegistrations");
 
             return bindingRegistrations.Where(x => x.Binding.ServiceType == service);
         }

@@ -70,11 +70,29 @@ namespace IocLite.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple bindings for Service type &apos;{0}&apos; were found. Cannot have multiple bindings for the same Service type. {2} Bindings found : {1}.
+        ///   Looks up a localized string similar to Multiple unnamed bindings for Service type &apos;{0}&apos; were found. Cannot have multiple default bindings for the same Service type. {1} Bindings found : {2}..
         /// </summary>
-        internal static string CannotHaveMultipleBindingsForSameServiceAndPluginType {
+        internal static string CannotHaveMultipleDefaultBindingsForService {
             get {
-                return ResourceManager.GetString("CannotHaveMultipleBindingsForSameServiceAndPluginType", resourceCulture);
+                return ResourceManager.GetString("CannotHaveMultipleDefaultBindingsForService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple named bindings for Service type &apos;{0}&apos; with the name &apos;{1}&apos; were found. Cannot have multiple named bindings for the same Service type with the same name. {2} Bindings found : {3}..
+        /// </summary>
+        internal static string CannotHaveMultipleNamedBindingsForServiceWithSameName {
+            get {
+                return ResourceManager.GetString("CannotHaveMultipleNamedBindingsForServiceWithSameName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No bindings found for Service type &apos;{0}&apos;. Cannot create an instance because type is abstract..
+        /// </summary>
+        internal static string CannotResolveAbstractServiceTypeWithNoBinding {
+            get {
+                return ResourceManager.GetString("CannotResolveAbstractServiceTypeWithNoBinding", resourceCulture);
             }
         }
         
@@ -84,6 +102,33 @@ namespace IocLite.Resources {
         internal static string CannotUseAnAbstractTypeForAPluginType {
             get {
                 return ResourceManager.GetString("CannotUseAnAbstractTypeForAPluginType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot determine default binding for service type &apos;{0}&apos;. Multiple default bindings found..
+        /// </summary>
+        internal static string MultipleDefaultBindingsFoundForService {
+            get {
+                return ResourceManager.GetString("MultipleDefaultBindingsFoundForService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot determine named binding for service type &apos;{0}&apos; with name &apos;{1}&apos;. Multiple bindings found with same name..
+        /// </summary>
+        internal static string MultipleNamedBindingsFoundForServiceWithSameName {
+            get {
+                return ResourceManager.GetString("MultipleNamedBindingsFoundForServiceWithSameName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No named bindings for Service type &apos;{0}&apos; with name &apos;{1}&apos; were found..
+        /// </summary>
+        internal static string UnknownNamedService {
+            get {
+                return ResourceManager.GetString("UnknownNamedService", resourceCulture);
             }
         }
     }

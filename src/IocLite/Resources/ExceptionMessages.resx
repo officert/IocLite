@@ -120,10 +120,25 @@
   <data name="CannotCreateInstanceOfAbstractType" xml:space="preserve">
     <value>Cannot create an instance of abstract type '{0}'.</value>
   </data>
-  <data name="CannotHaveMultipleBindingsForSameServiceAndPluginType" xml:space="preserve">
-    <value>Multiple bindings for Service type '{0}' were found. Cannot have multiple bindings for the same Service type. {2} Bindings found : {1}</value>
+  <data name="CannotHaveMultipleDefaultBindingsForService" xml:space="preserve">
+    <value>Multiple unnamed bindings for Service type '{0}' were found. Cannot have multiple default bindings for the same Service type. {1} Bindings found : {2}.</value>
+  </data>
+  <data name="CannotHaveMultipleNamedBindingsForServiceWithSameName" xml:space="preserve">
+    <value>Multiple named bindings for Service type '{0}' with the name '{1}' were found. Cannot have multiple named bindings for the same Service type with the same name. {2} Bindings found : {3}.</value>
+  </data>
+  <data name="CannotResolveAbstractServiceTypeWithNoBinding" xml:space="preserve">
+    <value>No bindings found for Service type '{0}'. Cannot create an instance because type is abstract.</value>
   </data>
   <data name="CannotUseAnAbstractTypeForAPluginType" xml:space="preserve">
     <value>Cannot plug in abstract type '{0}' to Service type '{1}'. Abstract types cannot be used as Plugin types.</value>
+  </data>
+  <data name="MultipleDefaultBindingsFoundForService" xml:space="preserve">
+    <value>Cannot determine default binding for service type '{0}'. Multiple default bindings found.</value>
+  </data>
+  <data name="MultipleNamedBindingsFoundForServiceWithSameName" xml:space="preserve">
+    <value>Cannot determine named binding for service type '{0}' with name '{1}'. Multiple bindings found with same name.</value>
+  </data>
+  <data name="UnknownNamedService" xml:space="preserve">
+    <value>No named bindings for Service type '{0}' with name '{1}' were found.</value>
   </data>
 </root>

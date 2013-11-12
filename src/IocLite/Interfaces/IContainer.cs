@@ -6,10 +6,12 @@ namespace IocLite.Interfaces
     public interface IContainer
     {
         object Resolve(Type type, string name = null);
-        object Resolve<T>(string name = null);
-        IEnumerable<object> ResolveAll(Type type);
 
-        object TryResolve(Type type);
+        object Resolve<T>(string name = null);
+
+        IEnumerable<object> ResolveAll(Type service);
+
+        object TryResolve(Type service);
 
         //void Release(Type type);
 
