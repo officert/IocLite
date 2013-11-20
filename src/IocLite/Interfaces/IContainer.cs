@@ -7,7 +7,7 @@ namespace IocLite.Interfaces
     {
         object Resolve(Type type, string name = null);
 
-        object Resolve<T>(string name = null);
+        TService Resolve<TService>(string name = null);
 
         IEnumerable<object> ResolveAll(Type service);
 

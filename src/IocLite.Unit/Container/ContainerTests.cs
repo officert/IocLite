@@ -38,7 +38,7 @@ namespace IocLite.Unit.Container
 
             //act + assert
             Assert.That(() => _container.Register(registries),
-                Throws.Exception.TypeOf(typeof(ArgumentNullException)).With.Message.StartsWith(Ensure.ArgumentNullMessage));
+                Throws.Exception.TypeOf(typeof(ArgumentNullException)).With.Message.EqualTo(string.Format(Ensure.ArgumentIsNullMessageFormat, "registries")));
         }
 
         [Test]
@@ -622,14 +622,28 @@ namespace IocLite.Unit.Container
         #region CreateObjectGraph
 
         [Test]
-        public void CreateObjectGraph_TypeIsNull_ThrowsException()
+        public void CreateObjectGraph_BindingIsNull_ThrowsException()
         {
             //arrange
-            Type type = null;
+            Binding binding = null;
 
             //act + assert
-            Assert.That(() => _container.CreateObjectGraph(type),
-                Throws.Exception.TypeOf(typeof(ArgumentNullException)).With.Message.StartsWith(Ensure.ArgumentNullMessage));
+            Assert.That(() => _container.CreateObjectGraph(binding),
+                Throws.Exception.TypeOf(typeof(ArgumentNullException)).With.Message.EqualTo(string.Format(Ensure.ArgumentIsNullMessageFormat, "binding")));
+        }
+
+        [Test]
+        public void CreateObjectGraph_BindingPluginIsNull_ThrowsException()
+        {
+            //arrange
+            var binding = new Binding
+            {
+                PluginType = null
+            };
+
+            //act + assert
+            Assert.That(() => _container.CreateObjectGraph(binding),
+                Throws.Exception.TypeOf(typeof(ArgumentNullException)).With.Message.EqualTo(string.Format(Ensure.ArgumentIsNullMessageFormat, "binding.PluginType")));
         }
 
         #endregion
@@ -639,7 +653,8 @@ namespace IocLite.Unit.Container
     {
         public override void Load()
         {
-            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>();
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>()
+                .Constructor("", ctx => "");
         }
     }
 
@@ -647,7 +662,8 @@ namespace IocLite.Unit.Container
     {
         public override void Load()
         {
-            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>().InTransientScope();
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>()
+                .InTransientScope();
         }
     }
 

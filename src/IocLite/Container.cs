@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using IocLite.Exceptions;
 using IocLite.Extensions;
@@ -52,10 +53,10 @@ namespace IocLite
             return ResolveInstanceOfService(type, name);
         }
 
-        public object Resolve<TService>(string name = null)
+        public TService Resolve<TService>(string name = null)
         {
             var type = typeof(TService);
-            return ResolveInstanceOfService(type, name);
+            return (TService)ResolveInstanceOfService(type, name);
         }
 
         public IEnumerable<object> ResolveAll(Type service)
@@ -63,7 +64,6 @@ namespace IocLite
             Ensure.ArgumentIsNotNull(service, "type");
 
             var registrations = _bindingResolver.ResolveBindings(service, BindingRegistrations);
-
 
             throw new NotImplementedException();
         }
@@ -82,7 +82,7 @@ namespace IocLite
             }
         }
 
-        //public void Release(Type type)
+        //private void Release(Type type)
         //{
         //    //TODO: need to figure out what exactly Release should do - not sure the current behaviour is right
 
@@ -97,30 +97,39 @@ namespace IocLite
         //    //binding.Dispose();
         //}
 
-        internal object CreateObjectGraph(Type type)
+        internal object CreateObjectGraph(IBinding binding)
         {
-            Ensure.ArgumentIsNotNull(type, "type");
+            Ensure.ArgumentIsNotNull(binding, "binding");
+            Ensure.ArgumentIsNotNull(binding.PluginType, "binding.PluginType");
 
-            if (type.IsAnAbstraction())
-                throw new InvalidOperationException(string.Format(ExceptionMessages.CannotCreateInstanceOfAbstractType, type));
+            if (binding.PluginType.IsAnAbstraction())
+                throw new InvalidOperationException(string.Format(ExceptionMessages.CannotCreateInstanceOfAbstractType, binding.PluginType));
 
-            var constructors = type.GetConstructors();
-            var ctor = constructors.FirstOrDefault();
+            if (binding.PluginType.HasADefaultConstructor())
+                return Activator.CreateInstance(binding.PluginType);
 
-            //TODO: need better algorithm for choosing the constructor to use - should be something like
-            //TODO: whichever constructor we can resolve the most dependencies for
+            var constructors = binding.PluginType.GetConstructors();
 
-            if (type.HasADefaultConstructor() || ctor == null)
-                return Activator.CreateInstance(type);
+            var numCtorArgs = 0;
+            ConstructorInfo constructor = null;
+            constructors.ToList().ForEach(x =>
+             {
+                 var numParams = x.GetParameters().Count();
+                 if (numParams > numCtorArgs)
+                 {
+                     constructor = x;
+                     numCtorArgs = numParams;
+                 }
+             });
 
-            var constructorArgs = ctor.GetParameters().ToList();
+            var constructorArgs = constructor.GetParameters().ToList();
             var argObjs = new List<object>();
 
             foreach (var constructorArg in constructorArgs)
             {
                 argObjs.Add(Resolve(constructorArg.ParameterType));
             }
-            return Activator.CreateInstance(type, argObjs.ToArray());
+            return Activator.CreateInstance(binding.PluginType, argObjs.ToArray());
         }
 
         #region Private Helpers
@@ -133,23 +142,23 @@ namespace IocLite
 
             if (service.IsAnAbstraction() && !registrations.Any()) throw new BindingConfigurationException(string.Format(ExceptionMessages.CannotResolveAbstractServiceTypeWithNoBinding, service));
 
-            if (!registrations.Any()) return CreateObjectGraph(service);
+            if (!registrations.Any()) return CreateObjectGraph(new Binding { PluginType = service });
 
             if (!string.IsNullOrEmpty(name))
             {
                 var namedRegistrations = registrations.Where(x => x.Binding.Name == name).ToList();
 
                 if (!namedRegistrations.Any()) throw new BindingConfigurationException(string.Format(ExceptionMessages.UnknownNamedService, service.Name, name));
-                //This should never happen (multiple bindings with the same name), because we are checking for this at registration time
-                if (namedRegistrations.Count() > 1) throw new BindingConfigurationException(string.Format(ExceptionMessages.MultipleNamedBindingsFoundForServiceWithSameName, service, name));
+
+                if (namedRegistrations.Count() > 1) //This should never happen (multiple bindings with the same name), because we are checking for this at registration time
+                    throw new BindingConfigurationException(string.Format(ExceptionMessages.MultipleNamedBindingsFoundForServiceWithSameName, service, name));
 
                 var namedRegistration = registrations.FirstOrDefault();
 
                 return GetObjectFromObjectFactory(namedRegistration.Binding, namedRegistration.ObjectFactory);
             }
 
-            //This should never happen (multiple default bindings), because we are checking for this at registration time
-            if (registrations.Count() > 1)
+            if (registrations.Count() > 1) //This should never happen (multiple default bindings), because we are checking for this at registration time
                 throw new BindingConfigurationException(string.Format(ExceptionMessages.MultipleDefaultBindingsFoundForService, service));
 
             var registration = registrations.FirstOrDefault();

@@ -17,7 +17,7 @@ namespace IocLite.ObjectFactories
 
         public object GetObject(IBinding binding, Container container)
         {
-            return _objInstance ?? (_objInstance = container.CreateObjectGraph(binding.PluginType));
+            return _objInstance ?? (_objInstance = container.CreateObjectGraph(binding));
         }
     }
 }

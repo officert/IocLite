@@ -6,8 +6,13 @@ namespace IocLite
 {
     public static class Ensure
     {
-        public const string ArgumentNullMessage = "Cannot be null";
-        public const string ArgumentNullOrEmptyMessage = "Cannot be null or empty";
+        public static string ArgumentIsNullMessageFormat = ArgumentNullMessage + @"
+Parameter name: {0}";
+        public static string ArgumentIsNullOrEmptyMessageFormat = ArgumentNullOrEmptyMessage + @"
+Parameter name: {0}";
+
+        private const string ArgumentNullMessage = "Cannot be null";
+        private const string ArgumentNullOrEmptyMessage = "Cannot be null or empty";
 
         public static void ArgumentIsNotNull(object argument, string name)
         {
