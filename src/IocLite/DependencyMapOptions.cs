@@ -14,7 +14,7 @@ namespace IocLite
         public IDependencyMapOptions Named(string name)
         {
             _binding.Name = name;
-            return new DependencyMapMapOptions(_binding);
+            return this;
         }
 
         /// <summary>

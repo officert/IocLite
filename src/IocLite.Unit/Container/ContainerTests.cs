@@ -653,8 +653,7 @@ namespace IocLite.Unit.Container
     {
         public override void Load()
         {
-            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>()
-                .Constructor("", ctx => "");
+            For<TypeWithDefaultConstructor>().Use<TypeWithDefaultConstructor>();
         }
     }
 
